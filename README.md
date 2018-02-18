@@ -4,11 +4,23 @@ This project contains a number of OpenMP examples.
 
 A Fortran timing module (itself an interface to a C time call) is also provided as a utility to aid in getting wall clock time for serial Fortran programs.
 
+## Vector Addition
+
+Serial and parallel versions of the simple vector add program: `C=A+B`.
+
+
 ## Pi
 
 This code implements the integration of `4/(1+x*x)` using the trapezoidal rule to estimate pi.
 
+A number of implementations are given, and should be viewed in order
 
+1. pi: the serial version
+2. critical: an initial parallel version, using a critical region to safeguard sum
+3. atomic: parallel version, using an atomic to safeguard sum
+4. array: parallel version, using an array of partial sums, one per thread
+5. private: parallel version, using a private sum to each thread, totalled with a critical
+6. reduction: parallel version using OpenMP reduction
 
 ## Jacobi
 
