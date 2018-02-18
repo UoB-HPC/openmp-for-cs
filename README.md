@@ -18,10 +18,11 @@ Use `--help` to see a full description for all of the command-line arguments.
 ## Sample runtimes
 
 Here are the runtimes that we achieve with the starting code for a few different matrix sizes.
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz).
 
-| Matrix size | Solver runtime | Iterations | Solution error |
-| ----------- | -------------- | ---------- | -------------- |
-|     500     |  1.48 seconds  |    1465    |    0.02495     |
-|    1000     |  10.9 seconds  |    2957    |    0.05005     |
-|    2000     |   130 seconds  |    5479    |    0.09998     |
-|    4000     |  1180 seconds  |   10040    |    0.1999      |
+| Matrix size | Solver runtime  | Iterations | Solution error   |
+| ----------- | --------------- | ---------- | ---------------- |
+|     500     |  0.331 seconds  |    1511    |    0.0248609     |
+|    1000     |  4.858 seconds  |    2883    |    0.0499393     |
+|    2000     |  170   seconds  |    5445    |    0.0999166     |
+|    4000     |  1671  seconds  |    10233   |    0.1998391     |
