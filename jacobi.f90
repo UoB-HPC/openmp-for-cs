@@ -79,18 +79,10 @@ end module solve_mod
 ! Main program
 program jacobi
 
-  use ISO_C_BINDING ! Link to C timing routine
+  use timer
   use solve_mod     ! Include solver (above)
 
   implicit none
-
-  ! Interface to C timing routine
-  interface
-    subroutine wtime(time) bind(C, name='wtime')
-      use ISO_C_BINDING
-      real(C_DOUBLE) :: time
-    end subroutine
-  end interface
 
   ! Solver settings
   integer :: MAX_ITERATIONS=20000

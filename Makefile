@@ -3,17 +3,19 @@ FTN=gfortran
 FFLAGS=-Wall -O3
 LIBS=
 
+TIMEOBJ=timer.o wtime.o
+
 default: all
 
 all: jacobi pi
 
-jacobi: jacobi.f90 wtime.o
+jacobi: jacobi.f90 $(TIMEOBJ)
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
 
-%:%.f90 timer.o wtime.o
+%:%.f90 $(TIMEOBJ)
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
 
-timer.o: timer.f90
+%.o:%.f90
 	$(FTN) -O3 $< -c
 
 %.o: %.c
