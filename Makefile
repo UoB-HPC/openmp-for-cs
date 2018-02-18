@@ -10,8 +10,11 @@ all: jacobi pi
 jacobi: jacobi.f90 wtime.o
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
 
-%:%.f90
+%:%.f90 timer.o wtime.o
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
+
+timer.o: timer.f90
+	$(FTN) -O3 $< -c
 
 %.o: %.c
 	$(CC) -O3 $< -c
