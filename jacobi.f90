@@ -170,10 +170,10 @@ program jacobi
   call wtime(total_end)
 
   ! Print results
-  write(*,"(A,G13.7)") "Solution error = ", err
+  write(*,"(A,F13.7)") "Solution error = ", err
   write(*,"(A,I0)")    "Iterations     = ", itr
-  write(*,"(A,G10.3)") "Total runtime  = ", total_end-total_start
-  write(*,"(A,G10.3)") "Solver runtime = ", solve_end-solve_start
+  write(*,"(A,F10.3)") "Total runtime  = ", total_end-total_start
+  write(*,"(A,F10.3)") "Solver runtime = ", solve_end-solve_start
   if (itr .eq. MAX_ITERATIONS) write(*,"(A)") "WARNING: solution did not converge"
   write(*,"(A)")       "------------------------------------"
 
