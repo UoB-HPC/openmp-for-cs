@@ -1,7 +1,7 @@
 
 FTN=gfortran
 FFLAGS=-Wall -O3
-LIBS=
+LIBS=-fopenmp
 
 TIMEOBJ=timer.o wtime.o
 
