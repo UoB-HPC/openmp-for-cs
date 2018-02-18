@@ -22,7 +22,7 @@ program pi_main
 
   ! main loop
   do ii = 1, num_steps
-    x = (ii+0.5_8)*step
+    x = (ii-0.5_8)*step
     sum = sum + (4.0_8/(1.0_8+x*x))
   end do
   pi = step * sum
