@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <sys/time.h>
 
 /* Get the current time in seconds since the Epoch */
