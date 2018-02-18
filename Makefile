@@ -7,7 +7,9 @@ TIMEOBJ=timer.o wtime.o
 
 default: all
 
-all: jacobi pi
+BINS=jacobi pi pi_critical pi_atomic pi_array pi_private pi_reduction vadd vadd_paralleldo
+
+all: $(BINS)
 
 jacobi: jacobi.f90 $(TIMEOBJ)
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
@@ -23,4 +25,4 @@ jacobi: jacobi.f90 $(TIMEOBJ)
 
 .PHONY: clean
 clean:
-	rm -f *.o *.mod jacobi pi
+	rm -f *.o *.mod $(BINS)
