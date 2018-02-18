@@ -1,5 +1,10 @@
+# Build output
 *.o
 *.mod
+
+# Binary names
 jacobi
 pi
 
+# Misc.
+.*.swp
