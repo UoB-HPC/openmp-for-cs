@@ -3,8 +3,15 @@
 *.mod
 
 # Binary names
-jacobi
 pi
+pi_array
+pi_atomic
+pi_critical
+pi_private
+pi_reduction
+jacobi
+vadd
+vadd_paralleldo
 
 # Misc.
 .*.swp
