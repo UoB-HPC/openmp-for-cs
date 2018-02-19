@@ -1,3 +1,6 @@
+# PDFs
+*.pdf
+
 # Latex temp files
 *.aux
 *.fdb_latexmk
