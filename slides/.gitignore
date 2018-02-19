@@ -1,0 +1,11 @@
+# Latex temp files
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+_minted-*/
