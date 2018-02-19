@@ -38,6 +38,7 @@ program pi_main
   do ii = 1, num_steps
     x = (ii-0.5_8)*step
     sum(tid+1) = sum(tid+1) + (4.0_8/(1.0_8+x*x))
+    !$omp flush(sum)
   end do
   !$omp end do
   !$omp end parallel
