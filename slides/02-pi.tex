@@ -8,6 +8,7 @@
 \usepackage{multicol}
 \usepackage{booktabs}
 
+\usecolortheme{rose}
 
 \author{Tom Deakin}
 \title{OpenMP for Computational Scientists}
@@ -33,6 +34,147 @@
 \end{frame}
 %-------------------------------------------------------------------------------
 
+\section{Data sharing}
+\begin{frame}
+\frametitle{Data sharing}
+Remember: OpenMP is a \emph{shared} programming model.
+By default, all data is available to all threads.
+
+There is a single copy of \emph{shared} data.
+
+You must specify which data should be \emph{private} to each thread.
+Each thread then has local (stack) space for each private variable.
+Each copy is only visible to its associated thread.
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Variables on the heap}
+All data on the heap is shared.
+Therefore all the Fortran \mintinline{fortran}|allocatable| data is shared.
+You must ensure that different threads do not write to the same element of these arrays.
+
+Setting a data sharing clause on a heap variable only effects the metadata of the variable.
+The pointer could be private, but the target will be shared.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data clauses}
+\begin{itemize}
+  \item \mintinline{fortran}|shared(x)|
+    There is one copy of the \mintinline{fortran}|x| variable. The programmer must ensure synchronisation.
+  \item \mintinline{fortran}|private(x)|
+    Each thread gets its own local \mintinline{fortran}|x| variable. It is not initialised. The value of the original \mintinline{fortran}|x| variable is undefined on region exit.
+  \item \mintinline{fortran}|firstprivate(x)|
+    Each thread gets its own \mintinline{fortran}|x| variable, and it is initialised to the value of the original variable entering the region.
+  \item \mintinline{fortran}|lastprivate(x)|
+    Each thread gets its own \mintinline{fortran}|x| variable, and the original variable is updated from the last iteration.
+\end{itemize}
+
+There is also the \mintinline{fortran}|threadprivate(x)| directive.
+This says to take a copy of the data in \emph{thread local storage} which is persistent across parallel regions.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Private example}
+Simple \mintinline{fortran}|do| loop, which just sets a variable to the iteration number.
+Each iteration prints out the current, and next value of \mintinline{fortran}|x|, along with the thread number.
+Will see what happens with different data sharing clauses.
+
+\begin{minted}[linenos,breaklines]{fortran}
+  !$omp parallel do private(x) / firstprivate(x) / lastprivate(x)
+  do i = 1, N
+    write (*,"(2X,A,I0,A,I0,A,I0)") "Thread ", omp_get_thread_num(), " setting x=", x, " to ", i
+    x = i
+  end do
+  !$omp end parallel do
+\end{minted}
+N is set to 10.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Private example}
+\begin{minted}{bash}
+private:
+ before: x=-1
+  Thread 1 setting x=0 to 4
+  Thread 2 setting x=0 to 7
+  Thread 3 setting x=0 to 9
+  Thread 0 setting x=0 to 1
+  Thread 1 setting x=4 to 5
+  Thread 2 setting x=7 to 8
+  Thread 3 setting x=9 to 10
+  Thread 0 setting x=1 to 2
+  Thread 1 setting x=5 to 6
+  Thread 0 setting x=2 to 3
+ after: x=-1
+\end{minted}
+Each thread starts with its own \mintinline{fortran}|x|, which set to zero (the default value of an integer in Fortran).
+In C, it would probably be filled with garbage.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Private example}
+\begin{minted}{bash}
+firstprivate:
+ before: x=-1
+  Thread 3 setting x=-1 to 9
+  Thread 2 setting x=-1 to 7
+  Thread 1 setting x=-1 to 4
+  Thread 0 setting x=-1 to 1
+  Thread 3 setting x=9 to 10
+  Thread 2 setting x=7 to 8
+  Thread 1 setting x=4 to 5
+  Thread 0 setting x=1 to 2
+  Thread 1 setting x=5 to 6
+  Thread 0 setting x=2 to 3
+ after: x=-1
+\end{minted}
+Each thread starts with its own \mintinline{fortran}|x|, which set to the value of \mintinline{fortran}|x| before entering the \mintinline{fortran}|parallel| region, -1.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Private example}
+\begin{minted}{bash}
+lastprivate:
+ before: x=-1
+  Thread 3 setting x=3 to 9
+  Thread 2 setting x=2 to 7
+  Thread 1 setting x=1 to 4
+  Thread 3 setting x=9 to 10
+  Thread 0 setting x=0 to 1
+  Thread 2 setting x=7 to 8
+  Thread 1 setting x=4 to 5
+  Thread 0 setting x=1 to 2
+  Thread 1 setting x=5 to 6
+  Thread 0 setting x=2 to 3
+ after: x=10
+\end{minted}
+Each thread starts with its own \mintinline{fortran}|x|, which set to to a garbage value.
+On exiting the region, the original \mintinline{fortran}|x| is set to the value of the last iteration of the loop, 10.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Choosing default data sharing}
+\begin{alertblock}{Note}
+It is especially important to list private variables in Fortran.
+All variables are \emph{global} scope so \emph{everything} is shared by default.
+In C, local scoping rules makes this easier.
+\end{alertblock}
+
+You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute.
+You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|default(firstprivate)| to make everything private by default --- this might save a lot of typing in an old code with many temporary variables.
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{Calculating Pi}
 \begin{frame}
 \frametitle{Integration to calculate Pi}
