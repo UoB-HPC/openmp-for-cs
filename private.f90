@@ -49,7 +49,7 @@ program private
 
   ! Last private clause
   x=-1
-  write (*,"(A,I0)") "firstprivate:"
+  write (*,"(A,I0)") "lastprivate:"
   write (*,"(1X,A,I0)") "before: x=", x
   !$omp parallel do lastprivate(x)
   do i = 1, N
