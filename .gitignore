@@ -15,3 +15,4 @@ vadd_paralleldo
 
 # Misc.
 .*.swp
+.DS_Store
