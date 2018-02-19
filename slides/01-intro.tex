@@ -1,0 +1,29 @@
+\documentclass{beamer}
+
+\usecolortheme{rose}
+
+\usepackage{amsmath}
+
+\author{Tom Deakin}
+\title{OpenMP for Computational Scientists}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Outline}
+\begin{frame}
+\frametitle{Course Outline}
+\begin{itemize}
+  \item OpenMP overview (fork join, spmd, work sharing) (vec add)
+  \item Data sharing clauses and reduction (Pi program, critical, single atomics)
+  \item Matrix multiplication optimisation
+  \item Jacobi
+  \item SIMD clauses
+  \item GPU programming
+  \item MPI interop (MPI\_Thread\_init, who can send messages, hybrid scaling pros and cons, thread pinning)
+\end{itemize}
+\end{frame}
+
+
+\end{document}
