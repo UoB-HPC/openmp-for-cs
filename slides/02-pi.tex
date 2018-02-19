@@ -60,6 +60,7 @@ The pointer could be private, but the target will be shared.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Data clauses}
 \begin{frame}
 \frametitle{Data clauses}
 \begin{itemize}
@@ -78,6 +79,7 @@ This says to take a copy of the data in \emph{thread local storage} which is per
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Private example}
 \begin{frame}[fragile]
 \frametitle{Private example}
 Simple \mintinline{fortran}|do| loop, which just sets a variable to the iteration number.
@@ -161,6 +163,7 @@ On exiting the region, the original \mintinline{fortran}|x| is set to the value 
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Default data sharing}
 \begin{frame}
 \frametitle{Choosing default data sharing}
 \begin{alertblock}{Note}
@@ -225,7 +228,7 @@ With 100,000,000 steps, this takes 0.368s on my laptop.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\subsection{Critical regions}
+\section{Critical regions}
 \begin{frame}[fragile]
 \frametitle{Parallelising with critical}
 Add simple \mintinline{fortran}|!$omp parallel do|, but need to be careful changing the \mintinline{fortran}|sum| as this will be \emph{shared} between threads.
@@ -264,7 +267,7 @@ Critical & 426.1 \\
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\subsection{Atomics}
+\section{Atomics}
 \begin{frame}[fragile]
 \frametitle{Atomics}
 A \mintinline{fortran}|critical| region protects a whole block of code. For a single operation, can use \mintinline{fortran}|atomic| instead.
@@ -316,7 +319,7 @@ Atomic   & 8.3 \\
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\subsection{Avoiding critical regions}
+\section{Avoiding critical regions}
 \begin{frame}
 \frametitle{Independent summation}
 Both methods cause threads to synchronise for every update to \mintinline{fortran}|sum|.
