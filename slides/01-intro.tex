@@ -3,6 +3,7 @@
 \usecolortheme{rose}
 
 \usepackage{amsmath}
+\usepackage{minted}
 
 \author{Tom Deakin}
 \title{OpenMP for Computational Scientists}
@@ -20,10 +21,37 @@
   \item Matrix multiplication optimisation
   \item Jacobi
   \item SIMD clauses
+  \item Tasks
   \item GPU programming
   \item MPI interop (MPI\_Thread\_init, who can send messages, hybrid scaling pros and cons, thread pinning)
 \end{itemize}
 \end{frame}
 
+\begin{frame}
+Tim's slides about growth/history of OpenMP
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Building with OpenMP}
+
+\begin{minted}{bash}
+gfortran *.f90 -fopenmp # GNU
+ifort *.f90 -qopenmp    # Intel
+ftn *.f90               # Cray (on by default)
+pgf90 *.f90 -mp         # PGI
+\end{minted}
+
+To also use the API calls within the code, use the library:
+\begin{minted}{fortran}
+USE omp_lib
+\end{minted}
+
+\begin{alertblock}{Note}
+No need to include the library if only using the compiler directives.
+The library only gets you the API calls.
+\end{alertblock}
+
+
+\end{frame}
 
 \end{document}
