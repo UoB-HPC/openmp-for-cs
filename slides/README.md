@@ -8,3 +8,4 @@ The slides are written in LaTeX, using the following packages:
 - minted
 - fontenc
 - multicol
+- booktabs
