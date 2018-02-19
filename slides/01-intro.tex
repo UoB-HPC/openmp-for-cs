@@ -28,6 +28,40 @@
 
 %-------------------------------------------------------------------------------
 \begin{frame}
+\frametitle{Thanks}
+Thanks go to the following authors, whos own OpenMP tutorials have inspired this one:
+\begin{itemize}
+  \item Tim Mattson (Intel)
+  \item Simon McIntosh-Smith (UoBristol)
+  \item Gethin Willians (UoBristol)
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{What is OpenMP?}
+
+A collection of compiler directives, library routines, and environment variables for parallelism for shared memory parallel programs.
+
+\begin{itemize}
+  \item Create and manage parallel programs while permitting portability.
+  \item User-directed parallelization.
+\end{itemize}
+
+A \emph{specfication} of annotations you can make to your program in order to make it parallel.
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Syntax}
+Compiler directives
+Most apply to a structure block
+Library API calls
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
 Tim's slides about growth/history of OpenMP
 \end{frame}
 
@@ -51,8 +85,107 @@ USE omp_lib
 No need to include the library if only using the compiler directives.
 The library only gets you the API calls.
 \end{alertblock}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Shared memory}
+Slide showing cores accessing shared memory
+Shared address
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Fork-join model}
+Fork join
+nested parallel region
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Creating OpenMP threads}
+parallel region
+talk about synch at end of region
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Pthreads}
+Show the same in Pthreads
+Thread pool
+\end{frame}
 
 
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Environment variables}
+Setting number of threads via env variables, API and clause
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Vector add}
+Vector add with SPMD (no worksharing)
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Synchronisation}
+Critical, atomic, barier, ordered, flush, locks
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Worksharing}
+parallel for vadd
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Scheduling}
+schedule clause
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Nested loops}
+Collapse
+Mention issues with SIMD/alignment?
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{5-point stencil example}
+Do parallelism of a structured grid 5-point stencil
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{nowait clause}
+nowait
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Sections}
+sections, single, tasks?
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Nested threads}
+sections, single, tasks?
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Resources}
+OpenMP secficiation (not for the faint hearted)
+Online tutorials
+Books
 \end{frame}
 
 %-------------------------------------------------------------------------------
