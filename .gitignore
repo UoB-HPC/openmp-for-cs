@@ -9,6 +9,7 @@ pi_atomic
 pi_critical
 pi_private
 pi_reduction
+private
 jacobi
 vadd
 vadd_paralleldo
