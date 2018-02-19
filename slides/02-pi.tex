@@ -252,11 +252,11 @@ No false sharing, as value is just a single number (i.e.\ a register).
     sum = sum + (4.0/(1.0+x*x))
   end do
   !$omp end do
-  pi = pi + sum
-  !$omp end parallel
   !$omp critical
-  pi = pi * step
+  pi = pi + sum
   !$omp end critical
+  !$omp end parallel
+  pi = pi * step
 \end{minted}
 \end{frame}
 
