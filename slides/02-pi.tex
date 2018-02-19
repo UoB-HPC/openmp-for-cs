@@ -6,6 +6,8 @@
 \usepackage{minted}
 \usepackage[T1]{fontenc}
 \usepackage{multicol}
+\usepackage{booktabs}
+
 
 \author{Tom Deakin}
 \title{OpenMP for Computational Scientists}
@@ -100,8 +102,23 @@ A \mintinline{fortran}|critical| region only allows one thread to excute at any 
   !$omp end parallel do
   pi = step * sum
 \end{minted}
+\end{frame}
 
-This takes 426.1s on my laptop (4 threads)!
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Runtimes}
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\begin{table}
+\begin{tabular}{cc}
+\toprule
+Implementation & Runtime (s) \\
+\midrule
+Serial   & 0.368 \\
+Critical & 426.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -136,7 +153,24 @@ Not specifying an atomic clause defaults to \mintinline{fortran}|update|.
   !$omp end parallel do
   pi = step * sum
 \end{minted}
-This takes 8.3s on my laptop (4 threads).
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Runtimes}
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\begin{table}
+\begin{tabular}{cc}
+\toprule
+Implementation & Runtime (s) \\
+\midrule
+Serial   & 0.368 \\
+Critical & 426.1 \\
+Atomic   & 8.3 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -172,7 +206,25 @@ As it's \emph{shared memory}, the \mintinline{fortran}|sum| array can be read ju
   end do
   pi = pi * step
 \end{minted}
-This takes 2.8s on my laptop (4 threads).
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Runtimes}
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\begin{table}
+\begin{tabular}{cc}
+\toprule
+Implementation & Runtime (s) \\
+\midrule
+Serial   & 0.368 \\
+Critical & 426.1 \\
+Atomic   & 8.3 \\
+Array    & 2.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -206,7 +258,26 @@ No false sharing, as value is just a single number (i.e.\ a register).
   pi = pi * step
   !$omp end critical
 \end{minted}
-This takes 0.104s on my laptop (4 threads).
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Runtimes}
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\begin{table}
+\begin{tabular}{cc}
+\toprule
+Implementation & Runtime (s) \\
+\midrule
+Serial        & 0.368 \\
+Critical      & 426.1 \\
+Atomic        & 8.3 \\
+Array         & 2.8 \\
+First private & 0.104 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -254,8 +325,28 @@ Much simpler to write --- just need a single directive:
   !$omp end parallel do
   pi = step * sum
 \end{minted}
-This takes 0.095s on my laptop (4 threads).
 \end{frame}
-%-------------------------------------------------------------------------------
 
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Runtimes}
+Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\begin{table}
+\begin{tabular}{cc}
+\toprule
+Implementation & Runtime (s) \\
+\midrule
+Serial        & 0.368 \\
+Critical      & 426.1 \\
+Atomic        & 8.3 \\
+Array         & 2.8 \\
+First private & 0.104 \\
+Reduction     & 0.095 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \end{document}
