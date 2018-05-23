@@ -13,17 +13,15 @@
 \section{Outline}
 \begin{frame}
 \frametitle{Course Outline}
-\begin{itemize}
-  \item OpenMP overview (fork join, spmd, work sharing) (vec add)
-  \item Data sharing clauses and reduction (Pi program, critical, single atomics)
-  \item Matrix multiplication optimisation
-  \item Jacobi
-  \item SIMD clauses
-  \item Tasks
-  \item NUMA
-  \item GPU programming
-  \item MPI interop (MPI\_Thread\_init, who can send messages, hybrid scaling pros and cons, thread pinning)
-\end{itemize}
+Organised as 6 sessions teaching OpenMP plus top-tips for getting good performance.
+\begin{enumerate}
+  \item OpenMP overview
+  \item Data sharing and reductions
+  \item Code optimisations
+  \item Vectoriation, NUMA and MPI interop
+  \item GPU programming with OpenMP
+  \item Tasks and Tools
+\end{enumerate}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -32,8 +30,9 @@
 Thanks go to the following authors, whos own OpenMP tutorials have inspired this one:
 \begin{itemize}
   \item Tim Mattson (Intel)
-  \item Simon McIntosh-Smith (UoBristol)
+  \item Simon McIntosh-Smith and the HPC team (UoBristol)
   \item Gethin Willians (UoBristol)
+  \item and many others
 \end{itemize}
 \end{frame}
 
@@ -53,16 +52,30 @@ A \emph{specfication} of annotations you can make to your program in order to ma
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Syntax}
-Compiler directives
-Most apply to a structure block
-Library API calls
-\end{frame}
+\begin{itemize}
+\item OpenMP mostly formed of \emph{compiler directives}\\
+  \begin{minted}{fortran}
+  !$omp construct [clause [clause]...]
+  \end{minted}
+  These tell the compiler to insert some extra code on your behalf.
 
-%-------------------------------------------------------------------------------
-\begin{frame}
-Tim's slides about growth/history of OpenMP
+\item Compiler directives usually apply to a \emph{structured block} of statements.
+Limited scoping in Fortran means often need \emph{end} directives.
+  \begin{minted}{fortran}
+  !$omp construct
+  ... ! lines of Fortran code
+  !$omp end construct
+  \end{minted}
+
+\item Library API calls
+  \begin{minted}{fortran}
+  use omp_lib
+  call omp_...()
+  \end{minted}
+
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
