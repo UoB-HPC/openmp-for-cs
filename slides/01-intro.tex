@@ -544,6 +544,46 @@ sections, single, tasks?
 
 %-------------------------------------------------------------------------------
 \begin{frame}
+\frametitle{5-point stencil example}
+First exercise: parallelise a simple 5-point stencil code using OpenMP.
+
+\begin{center}
+\begin{tikzpicture}
+\draw[step=1cm,gray,very thin] (-1.9,-1.9) grid (2.9,2.9);
+\draw[fill=black] (0.5,0.5) circle (0.1cm);
+\draw[fill=black] (-0.5,0.5) circle (0.1cm);
+\draw[fill=black] (1.5,0.5) circle (0.1cm);
+\draw[fill=black] (0.5,1.5) circle (0.1cm);
+\draw[fill=black] (0.5,-0.5) circle (0.1cm);
+\draw (-0.5,0.5) -- (1.5,0.5);
+\draw (0.5,-0.5) -- (0.5,1.5);
+\end{tikzpicture}
+\end{center}
+
+Value in every cell is set to the average of it's neighbours.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{5-point stencil example}
+Take \mintinline{bash}|stencil.f90| and parallelise it using OpenMP:
+\begin{enumerate}
+  \item Using a SPMD style
+  \item Using the OpenMP worksharing clauses
+\end{enumerate}
+
+The main loop to parallelise is:
+\begin{minted}[breaklines]{fortran}
+do i = 1, nx
+  do j = 1, ny
+    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j-1) + A(i,j+1)) / 4.0
+  end do
+end do
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
 \frametitle{Resources}
 OpenMP secficiation (not for the faint hearted)
 Online tutorials
