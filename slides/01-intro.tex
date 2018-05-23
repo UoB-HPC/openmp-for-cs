@@ -520,17 +520,136 @@ Next time: the rest of the OpenMP common core.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Scheduling}
-schedule clause
+\begin{frame}[fragile]
+\frametitle{The Schedule clause}
+\begin{itemize}
+  \item The worksharing clauses use default rules for assiging iterations to threads.
+  \item Can use the \mintinline{fortran}|schedule| clause to specify the distribution.
+  \item General format:
+    \begin{minted}{fortran}
+      !$omp parallel do schedule(...)
+    \end{minted}
+\end{itemize}
+Next slides go through the options, using the following loop as an example:
+\begin{minted}{fortran}
+!$omp parallel do num_threads(4)
+do i = 1, 100
+  ... ! loop body
+end do
+!$omp end parallel do
+\end{minted}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Synchronisation}
-Just introduce this stuff.
-Critical, atomic (in part 2)
-barier, ordered, flush, locks
+\begin{frame}[fragile]
+\frametitle{Static schedule}
+\begin{minted}{fortran}
+schedule(static)
+schedule(static,16)
+\end{minted}
+
+\begin{itemize}
+\item Static schedule divides iterations into chunks and assigns chunks to threads in round-robin.
+\item If no chunk size specified, iteration space divided roughly equally.
+\end{itemize}
+For our example loop:
+\begin{columns}
+\begin{column}{0.5\textwidth}
+  \mintinline{fortran}|schedule(static)|
+  \begin{tabular}{cc}
+  \toprule
+  Thread ID & Iterations \\
+  \midrule
+  0 &  1--25 \\
+  1 & 26--50 \\
+  2 & 51--75 \\
+  3 & 76--100 \\
+  \bottomrule
+  \end{tabular}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+  \mintinline{fortran}|schedule(static,16)|
+  \begin{tabular}{cc}
+  \toprule
+  Thread ID & Iterations \\
+  \midrule
+  0 &  1--16, 65--80 \\
+  1 & 17--32, 81--96 \\
+  2 & 33--48, 97--100 \\
+  3 & 49--64 \\
+  \bottomrule
+  \end{tabular}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Dynamic schedule}
+\begin{minted}{fortran}
+schedule(dynamic)
+schedule(dynamic,16)
+\end{minted}
+
+\begin{itemize}
+  \item Iteration space is divided into chunks according to chunk size.
+  \item If no chunk size specified, default size is one.
+  \item Each thread requests and executes a chunk, until no more chunks remain.
+  \item Useful for unbalanced work-loads if some threads complete work faster.
+\end{itemize}
+
+For our example with a chunk size of 16:
+\begin{itemize}
+  \item The iteration space is split into chunk of 16 (the last chunk may be smaller).
+  \item Each threads gets one chunk, then requests a new chunk to work on.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Guided schedule}
+\begin{minted}{fortran}
+schedule(guided)
+schedule(guided,16)
+\end{minted}
+
+\begin{itemize}
+  \item Similar to assignment to dynamic, except the chunk size decreases over time.
+  \item Granularity of work chunks gets finer over time.
+  \item If no chunk size is specified, the default size is one.
+  \item Useful to try to mitigate overheads of a \mintinline{fortran}|dynamic| schedule by starting with large chunks of work.
+\end{itemize}
+
+For our example with a chunk size of 16:
+\begin{itemize}
+  \item Each thread gets a chunk of 16 to work on.
+  \item Each thread requests a new chunk, which might be smaller than 16.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Other schedules}
+\begin{minted}{fortran}
+schedule(auto)
+\end{minted}
+\begin{itemize}
+  \item Let the compiler or runtime choose the schedule.
+\end{itemize}
+
+\vfill
+
+\begin{minted}{fortran}
+schedule(runtime)
+\end{minted}
+\begin{itemize}
+  \item Get the schedule from the \mintinline{bash}|OMP_SCHEDULE| environment variable.
+\end{itemize}
 
 \end{frame}
 
@@ -546,6 +665,14 @@ Mention issues with SIMD/alignment?
 \begin{frame}
 \frametitle{nowait clause}
 nowait
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Synchronisation}
+Just introduce this stuff.
+Critical, atomic (in part 2)
+barier, ordered, flush, locks
 \end{frame}
 
 %-------------------------------------------------------------------------------
