@@ -212,19 +212,51 @@ Nested threads are allowed, where a thread forks it's own team of threads.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Creating OpenMP threads}
-parallel region
-talk about synch at end of region
+\begin{minted}{fortran}
+program hello
+
+!$omp parallel
+  print *, "Hello"
+!$omp end parallel
+
+end program hello
+\end{minted}
+
+Threads \emph{redundantly} execute code in the block.
+
+Each thread will output \mintinline{bash}|Hello|.
+
+Threads are synchronised at the end of the parallel region.
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Pthreads}
-Show the same in Pthreads
-Thread pool
-\end{frame}
 
+\begin{minted}[fontsize=\small]{fortran}
+program hello
+  use fpthread
+  intger :: i, err
+  integer :: N = 4
+  type(fpthread_t) :: tid(N)
+
+  do i = 1, N
+    call fpthread_create(tid(i), NULL, run, NULL, err)
+  end do
+  do i = 1, N
+    call fpthread_join(tid(i), NULL, err)
+  end do
+
+  subroutine run
+    print *, "Hello"
+  end subroutine run
+end program hello
+\end{minted}
+
+\end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
