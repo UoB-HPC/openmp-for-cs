@@ -260,8 +260,17 @@ end program hello
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Environment variables}
-Setting number of threads via env variables, API and clause
+\frametitle{OpenMP and Pthreads}
+\begin{itemize}
+  \item Pthreads is very error prone and verbose.
+  \item The OpenMP \mintinline{fortran}|!$omp parallel| abstracts this away.
+  \item The compiler directive inserts this extra code for your behalf.
+  \item Pthreads requires wrapping up my parallel work in subroutines.
+    \begin{itemize}
+      \item Kernels are a useful abstraction used in many programming models.
+    \end{itemize}
+  \item OpenMP much more convenient for \emph{incrementally} adding parallelism to your code.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
