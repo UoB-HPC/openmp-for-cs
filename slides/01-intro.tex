@@ -492,15 +492,27 @@ end do
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Synchronisation}
-Just introduce this stuff.
-Critical, atomic, barier, ordered, flush, locks
+\frametitle{Vector add code}
+The vector add codes are available in the repository for you to look at:
+\begin{itemize}
+  \item Serial: \mintinline{bash}|vadd.f90|
+  \item SPMD: \mintinline{bash}|vadd_spmd.f90|
+  \item Worksharing: \mintinline{bash}|vadd_paralleldo.f90|
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Scheduling}
 schedule clause
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Synchronisation}
+Just introduce this stuff.
+Critical, atomic (in part 2)
+barier, ordered, flush, locks
 
 \end{frame}
 
@@ -510,12 +522,6 @@ schedule clause
 Collapse
 Mention issues with SIMD/alignment?
 
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{5-point stencil example}
-Do parallelism of a structured grid 5-point stencil
 \end{frame}
 
 %-------------------------------------------------------------------------------
