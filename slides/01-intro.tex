@@ -170,8 +170,45 @@ Different to MPI, where processes cannot see memory of another without explicit 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Fork-join model}
-Fork join
-nested parallel region
+Serial/sequential execution:
+\begin{center}
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (8,0);
+\end{tikzpicture}
+\end{center}
+
+In a \emph{fork-join} model, code starts serial, \emph{forks} a \emph{team} of threads then \emph{joins} them back to serial execution.
+\begin{center}
+\begin{tikzpicture}
+  \draw (0,0) -- (1,0);
+
+  % Fork
+  \draw (1,0) -- (2,1.5);
+  \draw (1,0) -- (2,0.5);
+  \draw (1,0) -- (2,-0.5);
+  \draw (1,0) -- (2,-1.5);
+  \draw (1,-1) node {Fork};
+
+  % Run in parallel
+  \draw (2,1.5)  -- (5,1.5);
+  \draw (2,0.5)  -- (5,0.5);
+  \draw (2,-0.5) -- (5,-0.5);
+  \draw (2,-1.5) -- (5,-1.5);
+  \draw (3.5,0) node {Parallel execution};
+
+  % Join
+  \draw (5,1.5)  -- (6,0);
+  \draw (5,0.5)  -- (6,0);
+  \draw (5,-0.5) -- (6,0);
+  \draw (5,-1.5) -- (6,0);
+  \draw (6,-1) node {Join};
+
+  % Serial end
+  \draw[->] (6,0) -- (8,0);
+\end{tikzpicture}
+\end{center}
+
+Nested threads are allowed, where a thread forks it's own team of threads.
 \end{frame}
 
 %-------------------------------------------------------------------------------
