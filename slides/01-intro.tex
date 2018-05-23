@@ -689,9 +689,28 @@ More on this when we talk about vectorisation in another session.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{nowait clause}
-nowait
+\begin{frame}[fragile]
+\frametitle{The nowait clause}
+\begin{itemize}
+  \item May have series of loops in your code which are independent.
+  \item Threads must wait/synchronise at the end of the loop \mintinline{fortran}|!$omp end do|.
+  \item But it might be possible to delay this synchronisation using the \mintinline{fortran}|nowait| clause.
+  \item When a thread finishes the first loop, it starts on the next loop.
+\end{itemize}
+
+\begin{minted}[fontsize=\small]{fortran}
+!$omp parallel
+!$omp do nowait
+do i = 1, N
+  A(i) = i
+end do
+!$omp end do       ! No barrier!
+!$omp do
+do i = 1, N
+  B(i) = i
+!$omp end do       ! Implicit barrier
+!$omp end parallel ! Implicit barrier
+\end{minted}
 \end{frame}
 
 %-------------------------------------------------------------------------------
