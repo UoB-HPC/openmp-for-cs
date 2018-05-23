@@ -11,9 +11,6 @@ BINS=jacobi pi pi_critical pi_atomic pi_array pi_private pi_reduction private va
 
 all: $(BINS)
 
-jacobi: jacobi.f90 $(TIMEOBJ)
-	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
-
 %:%.f90 $(TIMEOBJ)
 	$(FTN) $(FFLAGS) $^ $(LIBS) -o $@
 
