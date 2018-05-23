@@ -445,17 +445,41 @@ Be careful with your index calculation.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Synchronisation}
-Just introduce this stuff.
-Critical, atomic, barier, ordered, flush, locks
+\begin{frame}[fragile]
+\frametitle{Worksharing}
+
+\begin{itemize}
+\item The SPMD approach requires lots of bookkeeping.
+\item Common pattern of splitting loop iterations between threads.
+\item OpenMP has worksharing constructs to help with this.
+\item Used within a parallel region.
+\item Loop iterator is made \mintinline{fortran}|private| by default.
+\end{itemize}
+
+\begin{minted}{fortran}
+  !$omp parallel
+  !$omp do
+  do i = 1, N
+    C(i) = A(i) + B(i)
+  end do
+  !$omp end do
+  !$omp end parallel
+\end{minted}
+
+
+Generally it's convenient to combine the directives:
+\begin{minted}{fortran}
+!$omp parallel do
+!$omp end parallel do
+\end{minted}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Worksharing}
-parallel for vadd
-
+\frametitle{Synchronisation}
+Just introduce this stuff.
+Critical, atomic, barier, ordered, flush, locks
 \end{frame}
 
 %-------------------------------------------------------------------------------
