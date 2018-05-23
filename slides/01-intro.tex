@@ -453,7 +453,7 @@ Be careful with your index calculation.
 \item Common pattern of splitting loop iterations between threads.
 \item OpenMP has worksharing constructs to help with this.
 \item Used within a parallel region.
-\item Loop iterator is made \mintinline{fortran}|private| by default.
+\item Loop iterator is made \mintinline{fortran}|private| by default: no need for data sharing clause.
 \end{itemize}
 
 \begin{minted}{fortran}
@@ -466,13 +466,28 @@ Be careful with your index calculation.
   !$omp end parallel
 \end{minted}
 
+Implicit synchronisation point at the \mintinline{fortran}|!$omp end do|.
 
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Combined worksharing directives}
 Generally it's convenient to combine the directives:
 \begin{minted}{fortran}
 !$omp parallel do
+do i = 1, N
+  ... ! loop body
+end do
 !$omp end parallel do
 \end{minted}
 
+\begin{itemize}
+  \item This starts a parallel region, forking some threads.
+  \item Each thread then gets a portion of the iteration space and computes the loop body in parallel.
+  \item Implicit synchronisation point at the \mintinline{fortran}|end do|.
+  \item Threads finally join again; later code executes sequentually.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
