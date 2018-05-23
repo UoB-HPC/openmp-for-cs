@@ -654,10 +654,37 @@ schedule(runtime)
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Nested loops}
+\begin{itemize}
+  \item Often have tightly nested loops in your code.
+  \item E.g. 2D grid code, every cell is independent.
+  \item OpenMP worksharing would only parallelise over first loop with each thread performing inner loop serially.
+  \item Use the \mintinline{fortran}|collapse(...)| clause to combine iteration spaces.
+  \item OpenMP then workshares the combined iteration space.
+\end{itemize}
+
+\begin{minted}{fortran}
+!$omp parallel do collapse(2)
+do i = 1, N
+  do j = 1, N
+    ... ! loop body
+  end do
+end do
+!$omp end parallel do
+\end{minted}
+All $N^2$ iterations are shared between threads.
+
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Nested loops}
-Collapse
-Mention issues with SIMD/alignment?
+\begin{block}{Performance note}
+Collapsing loops may subtly effect the compilers knowledge about alignment and effect vectoriation.
+More on this when we talk about vectorisation in another session.
+\end{block}
 
 \end{frame}
 
