@@ -15,6 +15,7 @@ vadd
 vadd_paralleldo
 vadd_spmd
 stencil
+stencil_paralleldo
 
 # Misc.
 .*.swp

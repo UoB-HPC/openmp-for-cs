@@ -7,7 +7,7 @@ TIMEOBJ=timer.o wtime.o
 
 default: all
 
-BINS=jacobi pi pi_critical pi_atomic pi_array pi_private pi_reduction private vadd vadd_paralleldo vadd_spmd stencil
+BINS=jacobi pi pi_critical pi_atomic pi_array pi_private pi_reduction private vadd vadd_paralleldo vadd_spmd stencil stencil_paralleldo
 
 all: $(BINS)
 
