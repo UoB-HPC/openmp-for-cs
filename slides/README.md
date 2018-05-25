@@ -4,7 +4,7 @@
 1. OpenMP overview (fork-join, spmd, worksharing). vec-add + stencil
 2. Data sharing clauses and reductions - pi, critical, atomics
 3. Code optimisaion (mat mul, jacobi) - Roofline
-4. Vectorisation, NUMA and MPI interop - hybrid scaling issues, thread pinning, mention collapse alignment issues
+4. Vectorisation, NUMA and MPI interop - hybrid scaling issues, thread pinning, first touch, mention collapse alignment issues
 5. GPU programming
 6. Tasks and Tools - do sections, ordered, single, master, tasks
 
