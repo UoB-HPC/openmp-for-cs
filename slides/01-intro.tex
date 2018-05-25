@@ -223,7 +223,7 @@ Nested threads are allowed, where a thread forks it's own team of threads.
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Creating OpenMP threads}
-\begin{minted}{fortran}
+\begin{minted}[frame=single, linenos]{fortran}
 program hello
 
 !$omp parallel
@@ -245,7 +245,7 @@ Threads are synchronised at the end of the parallel region.
 \begin{frame}[fragile]
 \frametitle{Pthreads}
 
-\begin{minted}[fontsize=\small]{fortran}
+\begin{minted}[fontsize=\small, linenos, frame=single]{fortran}
 program hello
   use fpthread
   intger :: i, err
@@ -338,7 +338,7 @@ The OpenMP API gives you calls to determine thread information when \emph{inside
 \frametitle{Vector add}
 Walkthrough parallelising vector addition using OpenMP.
 
-\begin{minted}[fontsize=\small,linenos]{fortran}
+\begin{minted}[fontsize=\small,linenos,frame=single]{fortran}
 program vecadd
   integer :: N = 1024  ! Length of array
   ! Arrays
@@ -363,7 +363,7 @@ end program vecadd
 \begin{frame}[fragile]
 \frametitle{Vector add: Step 1}
 Add parallel region around work
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
   !$omp parallel
   do i = 1, N
     C(i) = A(i) + B(i)
@@ -377,7 +377,7 @@ Every thread will now do the entire vector addition --- redundantly!
 \begin{frame}[fragile]
 \frametitle{Vector add: Step 2}
 Get thread IDs
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
   integer :: tid, nthreads
 
   !$omp parallel
@@ -407,7 +407,7 @@ What's the problem here?
   \item This gives each thread it's own unique copy in memory for the variable.
 \end{itemize}
 
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
   integer :: tid, nthreads
 
   !$omp parallel private(tid)
@@ -426,7 +426,7 @@ Much more information about data sharing clausing in next session.
 \begin{frame}[fragile]
 \frametitle{Vector add: Step 3}
 Finally, share the iteration space between the threads.
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
   integer :: tid, nthreads
 
   !$omp parallel private(tid)
@@ -456,7 +456,7 @@ Be careful with your index calculation.
 \item Loop iterator is made \mintinline{fortran}|private| by default: no need for data sharing clause.
 \end{itemize}
 
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
   !$omp parallel
   !$omp do
   do i = 1, N
@@ -474,7 +474,7 @@ Implicit synchronisation point at the \mintinline{fortran}|!$omp end do|.
 \begin{frame}[fragile]
 \frametitle{Combined worksharing directives}
 Generally it's convenient to combine the directives:
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
 !$omp parallel do
 do i = 1, N
   ... ! loop body
@@ -531,7 +531,7 @@ Next time: the rest of the OpenMP common core.
     \end{minted}
 \end{itemize}
 Next slides go through the options, using the following loop as an example:
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
 !$omp parallel do num_threads(4)
 do i = 1, 100
   ... ! loop body
@@ -664,7 +664,7 @@ schedule(runtime)
   \item OpenMP then workshares the combined iteration space.
 \end{itemize}
 
-\begin{minted}{fortran}
+\begin{minted}[frame=single]{fortran}
 !$omp parallel do collapse(2)
 do i = 1, N
   do j = 1, N
@@ -698,7 +698,7 @@ More on this when we talk about vectorisation in another session.
   \item When a thread finishes the first loop, it starts on the next loop.
 \end{itemize}
 
-\begin{minted}[fontsize=\small]{fortran}
+\begin{minted}[fontsize=\small, linenos, frame=single]{fortran}
 !$omp parallel
 !$omp do nowait
 do i = 1, N
