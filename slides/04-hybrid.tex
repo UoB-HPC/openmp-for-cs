@@ -1,0 +1,62 @@
+\documentclass{beamer}
+
+\input{preamble.tex}
+
+\title{OpenMP for Computational Scientists}
+\subtitle{4: Combining MPI and OpenMP}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Outline}
+\begin{itemize}
+  \item Non-uniform Memory Access
+  \item Thread affinity in OpenMP
+  \item Scaling details
+  \item Combining MPI with OpenMP
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{NUMA}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{OpenMP proc bind}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Why combine MPI+OpenMP}
+Include scaling results
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{MPI programs}
+What happens when you run an MPI program?
+\begin{minted}{bash}
+mpirun -np 16 ./a.out
+\end{minted}
+
+\begin{itemize}
+  \item 16 processes are spawned on one (or more) nodes according to the hostname list file given by the queueing system.
+  \item There is no reason why these processes have to be serial:
+  \begin{itemize}
+    \item Each MPI rank could spawn OpenMP threads and run in parallel.
+    \item Each MPI rank could use a GPU.
+  \end{itemize}
+\end{itemize}
+
+  MPIInitthread
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+
+\end{document}
