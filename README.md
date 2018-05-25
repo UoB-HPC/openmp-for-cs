@@ -9,6 +9,13 @@ A Fortran timing module (itself an interface to a C time call) is also provided 
 Serial and parallel versions of the simple vector add program: `C=A+B`.
 
 
+## 5-point stencil
+
+Serial and parallel versions of a simple 5-point stencil on a rectangular grid.
+The value in each cell is computed as the average (mean) of itself and north, south, east and west neighbours.
+The stencil is applied to the grid a number of times.
+
+
 ## Pi
 
 This code implements the integration of `4/(1+x*x)` using the trapezoidal rule to estimate pi.
