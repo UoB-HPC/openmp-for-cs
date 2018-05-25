@@ -827,8 +827,8 @@ Take \mintinline{bash}|stencil.f90| and parallelise it using OpenMP:
   \item Using the OpenMP worksharing clauses
 \end{enumerate}
 
-The main loop to parallelise is:
-\begin{minted}[breaklines]{fortran}
+Focus on parallelising the main loop(s):
+\begin{minted}[frame=single,breaklines]{fortran}
 do i = 1, nx
   do j = 1, ny
     Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j-1) + A(i,j+1)) / 4.0
