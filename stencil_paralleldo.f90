@@ -18,7 +18,7 @@ program stencil
   allocate(A(0:nx+1,0:ny+1))
   allocate(Atmp(0:nx+1,0:ny+1))
 
-  ! Initilise data to zero
+  ! Initialise data to zero
   do i = 0, nx+1
     do j = 0, ny+1
       A(i,j) = 0.0_8
@@ -60,7 +60,7 @@ program stencil
   ! Stop timer
   call wtime(toc)
 
-  ! Sum up grid values for rudimentaty correctness check
+  ! Sum up grid values for rudimentary correctness check
   total_end = sum(A(:,:))
 
   ! Print result
