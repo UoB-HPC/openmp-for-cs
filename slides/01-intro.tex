@@ -823,18 +823,22 @@ Value in every cell is set to the average of it's neighbours.
 \frametitle{5-point stencil example}
 Take \mintinline{bash}|stencil.f90| and parallelise it using OpenMP:
 \begin{enumerate}
-  \item Using a SPMD style
-  \item Using the OpenMP worksharing clauses
+  \item Using a SPMD style.
+  \item Using the OpenMP worksharing clauses.
+  \item Vary the number of threads using \mintinline{bash}|OMP_NUM_THREADS|.
 \end{enumerate}
 
 Focus on parallelising the main loop(s):
 \begin{minted}[frame=single,breaklines]{fortran}
 do i = 1, nx
   do j = 1, ny
-    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j-1) + A(i,j+1)) / 4.0
+    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
   end do
 end do
 \end{minted}
+
+Sample solutions are provided, but do try it yourself first.
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
