@@ -29,25 +29,39 @@
 \begin{frame}
 \frametitle{Data sharing}
 Remember: OpenMP is a \emph{shared} programming model.
-By default, all data is available to all threads.
+\begin{itemize}
+  \item By default, all data is available to all threads.
+  \item There is a single copy of \emph{shared} data.
+\end{itemize}
 
-There is a single copy of \emph{shared} data.
+\vfill
 
 You must specify which data should be \emph{private} to each thread.
-Each thread then has local (stack) space for each private variable.
-Each copy is only visible to its associated thread.
+\begin{itemize}
+  \item Each thread then has local (stack) space for each private variable.
+  \item Each copy is only visible to its associated thread.
+\end{itemize}
+
+\begin{block}{Notice}
+Fortran variables being declared at the top of the routine mean you must think about this
+\end{block}
+
 \end{frame}
 
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Variables on the heap}
-All data on the heap is shared.
-Therefore all the Fortran \mintinline{fortran}|allocatable| data is shared.
-You must ensure that different threads do not write to the same element of these arrays.
+\begin{itemize}
+  \item All data on the heap is shared.
+  \item Therefore all the Fortran \mintinline{fortran}|allocatable| data is shared.
+  \item You must ensure that different threads do not write to the same element of these arrays.
+\end{itemize}
 
+\begin{alertblock}{Caution}
 Setting a data sharing clause on a heap variable only effects the metadata of the variable.
 The pointer could be private, but the target will be shared.
+\end{alertblock}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -78,7 +92,7 @@ Simple \mintinline{fortran}|do| loop, which just sets a variable to the iteratio
 Each iteration prints out the current, and next value of \mintinline{fortran}|x|, along with the thread number.
 Will see what happens with different data sharing clauses.
 
-\begin{minted}[linenos,breaklines]{fortran}
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
   !$omp parallel do private(x) / firstprivate(x) / lastprivate(x)
   do i = 1, N
     write (*,"(2X,A,I0,A,I0,A,I0)") "Thread ", omp_get_thread_num(), " setting x=", x, " to ", i
@@ -87,6 +101,7 @@ Will see what happens with different data sharing clauses.
   !$omp end parallel do
 \end{minted}
 N is set to 10.
+Full implementation: \mintinline{bash}|private.f90|.
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -164,8 +179,10 @@ All variables are \emph{global} scope so \emph{everything} is shared by default.
 In C, local scoping rules makes this easier.
 \end{alertblock}
 
-You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute.
-You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|default(firstprivate)| to make everything private by default --- this might save a lot of typing in an old code with many temporary variables.
+\begin{itemize}
+  \item You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute.
+  \item You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|default(firstprivate)| to make everything private by default --- this might save a lot of typing in an old code with many temporary variables.
+\end{itemize}
 
 \end{frame}
 
@@ -173,6 +190,7 @@ You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|defa
 \section{Calculating Pi}
 \begin{frame}
 \frametitle{Integration to calculate Pi}
+
 $$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
 
 \begin{tikzpicture}
@@ -208,7 +226,9 @@ Sum the area of the boxes. Choose a small \emph{step} size to generate lots of b
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Code}
-\begin{minted}[linenos,breaklines]{fortran}
+We will use this code which calculates the value of $\pi$ as an example for the remainder of this session.
+
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
   step = 1.0/num_steps
   do ii = 1, num_steps
     x = (ii-0.5)*step
@@ -216,18 +236,23 @@ Sum the area of the boxes. Choose a small \emph{step} size to generate lots of b
   end do
   pi = step * sum
 \end{minted}
+
 With 100,000,000 steps, this takes 0.368s on my laptop.
+
+Full implementation: \mintinline{bash}|pi.f90|.
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \section{Critical regions}
 \begin{frame}[fragile]
 \frametitle{Parallelising with critical}
-Add simple \mintinline{fortran}|!$omp parallel do|, but need to be careful changing the \mintinline{fortran}|sum| as this will be \emph{shared} between threads.
+\begin{itemize}
+  \item Add a simple \mintinline{fortran}|!$omp parallel do|\dots
+  \item But need to be careful changing the \mintinline{fortran}|sum| as this will be \emph{shared} between threads.
+  \item A \mintinline{fortran}|critical| region only allows one thread to excute at any one time. No guarentees of ordering.
+\end{itemize}
 
-A \mintinline{fortran}|critical| region only allows one thread to excute at any one time. No guarentees of ordering.
-
-\begin{minted}[linenos,breaklines]{fortran}
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
   step = 1.0/num_steps
   !$omp parallel do private(x)
   do ii = 1, num_steps
@@ -239,12 +264,15 @@ A \mintinline{fortran}|critical| region only allows one thread to excute at any 
   !$omp end parallel do
   pi = step * sum
 \end{minted}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Runtimes}
 Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\vfill
 
 \begin{table}
 \begin{tabular}{cc}
@@ -256,6 +284,13 @@ Critical & 426.1 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Full implementation: \mintinline{bash}|pi_critical.f90|.
+
+\begin{center}
+\large Really slow!
+\end{center}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -297,6 +332,8 @@ Not specifying an atomic clause defaults to \mintinline{fortran}|update|.
 \frametitle{Runtimes}
 Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
 
+\vfill
+
 \begin{table}
 \begin{tabular}{cc}
 \toprule
@@ -308,24 +345,37 @@ Atomic   & 8.3 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Full implementation: \mintinline{bash}|pi_atomic.f90|.
+
+\begin{center}
+\large Faster, but still slower than serial.
+\end{center}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \section{Avoiding critical regions}
 \begin{frame}
 \frametitle{Independent summation}
-Both methods cause threads to synchronise for every update to \mintinline{fortran}|sum|.
-But each thread could compute a partial sum independently, synchronising once to total at the end.
+\begin{itemize}
+  \item Both methods cause threads to synchronise for every update to \mintinline{fortran}|sum|.
+  \item But each thread could compute a partial sum independently, synchronising once to total at the end.
+\end{itemize}
+
+\vfill
 
 Make \mintinline{fortran}|sum| an array of length equal to the number of threads.
-Each thread stores its partial sum, and the array is totally by the master thread serially at the end.
-As it's \emph{shared memory}, the \mintinline{fortran}|sum| array can be read just fine on the master rank.
+\begin{itemize}
+  \item Each thread stores its partial sum, and the array is totally by the master thread serially at the end.
+  \item As it's \emph{shared memory}, the \mintinline{fortran}|sum| array can be read just fine on the master rank.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Independent summation}
-\begin{minted}[linenos,breaklines]{fortran}
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
   step = 1.0/num_steps
   !$omp parallel private(x,tid)
   tid = omp_get_thread_num()
@@ -350,6 +400,8 @@ As it's \emph{shared memory}, the \mintinline{fortran}|sum| array can be read ju
 \frametitle{Runtimes}
 Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
 
+\vfill
+
 \begin{table}
 \begin{tabular}{cc}
 \toprule
@@ -362,6 +414,13 @@ Array    & 2.8 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Full implementation: \mintinline{bash}|pi_array.f90|.
+
+\begin{center}
+\large Fastest parallel version so far, but still slow.
+\end{center}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -369,18 +428,24 @@ Array    & 2.8 \\
 \begin{frame}
 \frametitle{False sharing}
 This code is susceptible to \emph{false sharing}.
-This occurs when threads update data on the same cache line.
-This triggers that the cache line is synchronised across all cores, and reread before being updated by the tread.
-This is an example of \emph{cache thrashing}.
-The performance is reduced as threads must wait for the cache lines to refresh.
+\begin{itemize}
+  \item False sharing occurs when different threads update data on the same cache line.
+  \item Cache system is coherent between cores, so data consistency must be maintained.
+  \item The cache line is no longer up to date because another thread changed it (in their local cache).
+  \item Therefore, cache line must be flushed to memory and reread into the other thread everytime.
+  \item This is an example of \emph{cache thrashing}.
+  \item The performance is reduced as threads must wait for the cache lines to refresh.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
-\frametitle{First private pi}
-Can use data sharing clauses to our advantage here. Give each thread a scalar copy of \mintinline{fortran}|sum| to compute their partial sum, and reduce with only one critical (or atomic) region at the end.
+\frametitle{Firstprivate pi}
+Can use data sharing clauses to our advantage here:
+
+Give each thread a \emph{scalar} copy of \mintinline{fortran}|sum| to compute their partial sum, and reduce with only one critical (or atomic) region at the end.
 No false sharing, as value is just a single number (i.e.\ a register).
-\begin{minted}[linenos,breaklines]{fortran}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\small]{fortran}
   step = 1.0/num_steps
   !$omp parallel private(x) firstprivate(sum)
   !$omp do
@@ -402,6 +467,8 @@ No false sharing, as value is just a single number (i.e.\ a register).
 \frametitle{Runtimes}
 Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
 
+\vfill
+
 \begin{table}
 \begin{tabular}{cc}
 \toprule
@@ -415,6 +482,13 @@ First private & 0.104 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Full implementation: \mintinline{bash}|pi_private.f90|.
+
+\begin{center}
+\large Finally faster than serial! Around 3.5X faster.
+\end{center}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -451,8 +525,8 @@ MPI_Allreduce(MPI_IN_PLACE, arr, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Pi reduction}
-Much simpler to write --- just need a single directive:
-\begin{minted}[linenos,breaklines]{fortran}
+Much simpler to write using the \mintinline{fortran}|reduction| clause --- just need a single directive:
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
   step = 1.0/num_steps
   !$omp parallel do private(x) reduction(+:sum)
   do ii = 1, num_steps
@@ -462,12 +536,16 @@ Much simpler to write --- just need a single directive:
   !$omp end parallel do
   pi = step * sum
 \end{minted}
+
+Full implementation: \mintinline{bash}|pi_reduction.f90|.
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Runtimes}
 Run on a MacBook Pro (Intel Core i7-4980HQ CPU @ 2.80GHz) with 4 threads.
+
+\vfill
 
 \begin{table}
 \begin{tabular}{cc}
@@ -483,6 +561,17 @@ Reduction     & 0.095 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{block}{Recommendation}
+Use the \mintinline{fortran}|reduction| clause for reductions.
+\end{block}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Exercise}
+Jacobi? Or implement the reduction in the stencil code?
 \end{frame}
 
 %-------------------------------------------------------------------------------
