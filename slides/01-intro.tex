@@ -775,9 +775,26 @@ B(tid) = big_work2(A, tid)
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Nested threads}
-sections, single, tasks?
+\begin{itemize}
+  \item Turn on support with \mintinline{fortran}|OMP_NESTED=true|, otherwise inner region is default serial.
+  \item Every thread in the (outer) parallel region then spawns threads.
+  \item Control the number of threads with clauses or environment variable: \mintinline{bash}|OMP_NUM_THREADS=4,2|.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel num_threads(4)
+... ! A parallel region
+  !$omp parallel num_threads(4)
+  ... ! Inner parallel region
+  !$omp end parallel
+!$omp end parallel
+\end{minted}
+
+\begin{alertblock}{Warning!}
+Be careful how you use this. It's very easy to oversubscribe threads. Thread affinity can be tricky.
+\end{alertblock}
 \end{frame}
 
 %-------------------------------------------------------------------------------
