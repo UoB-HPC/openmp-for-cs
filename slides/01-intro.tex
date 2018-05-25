@@ -849,7 +849,8 @@ This section introduced the OpenMP programming model:
   \item Creating parallel regions: \mintinline{fortran}|!$omp parallel|/\mintinline{fortran}|!$omp end parallel|
   \item Getting thread IDs: \mintinline{fortran}|omp_get_thread_num()|/\mintinline{fortran}|omp_get_num_threads()|
   \item Worksharing constructs: \mintinline{fortran}|!$omp do|/\mintinline{fortran}|!$omp end do|
-  \item Anything else?
+  \item The \mintinline{fortran}|schedule| and \mintinline{fortran}|nowait| clauses
+  \item Synchronising threads with barriers: \mintinline{fortran}|!$omp barrier|
 \end{itemize}
 \end{frame}
 
