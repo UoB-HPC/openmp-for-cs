@@ -716,15 +716,62 @@ do i = 1, N
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Synchronisation}
-Just introduce this stuff.
-Critical, atomic (in part 2)
-barier, ordered, flush, locks
+A number of ways to synchronise the threads in OpenMP:
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item Barriers
+  \item Critical
+  \item Atomics
+  \item Locks
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item Ordered
+  \item Single
+  \item Master
+  \item Flush
+\end{itemize}
+\end{column}
+\end{columns}
+
+\vfill
+
+\begin{itemize}
+  \item Will look at Critical and Atomic in Session 2.
+  \item Ordered, Single and Master in Session 6.
+  \item Won't formally cover Flush and Locks --- advanced stuff with esoteric use cases.
+\end{itemize}
+
+Quickly cover barriers now.
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Sections}
-sections, single, tasks?
+\begin{frame}[fragile]
+\frametitle{Barriers}
+A barrier simply synchronises threads in a parallel region.
+
+\begin{minted}[frame=single,linenos]{fortran}
+!$omp parallel private(tid)
+
+tid = omp_get_thread_num()
+A(tid) = big_work1(tid)
+
+!$omp barrier
+
+B(tid) = big_work2(A, tid)
+
+!$omp end parallel
+\end{minted}
+
+\begin{itemize}
+  \item Running in parallel, need to compute \mintinline{fortran}|A(:)| before computing \mintinline{fortran}|B(:)|.
+  \item The barrier ensures all threads wait between these statements.
+  \item Must ensure all threads encounter the barrier.
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
