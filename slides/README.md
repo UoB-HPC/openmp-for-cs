@@ -6,7 +6,7 @@
 3. Code optimisaion (mat mul, jacobi) - Roofline
 4. Vectorisation, NUMA and MPI interop - hybrid scaling issues, thread pinning, mention collapse alignment issues
 5. GPU programming
-6. Tasks and Tools
+6. Tasks and Tools - do sections, ordered, single, master, tasks
 
 ## Dependancies
 The slides are written in LaTeX, using the following packages:
