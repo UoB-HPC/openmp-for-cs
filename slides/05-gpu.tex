@@ -229,9 +229,193 @@ end do
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{NVPROF}
+\frametitle{Data movement}
+\begin{itemize}
+  \item Remember: memory is \emph{not} shared between host and target.
+  \item Combination of implicit and explicit memory movement.
+  \item This is the most complicated part of the offload specification.
+  \item Memory movement is often a performance killer.
+    \begin{itemize}
+      \item A V100 has 900 GB/s peak memory bandwidth.
+      \item Connected to the host via PCIe with 32 GB/s peak bandwidth.
+      \item Transfers between host and device are relatively very slow: minimise them.
+    \end{itemize}
+\end{itemize}
 \end{frame}
 
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data regions}
+\begin{itemize}
+  \item Data needs mapping between host and device memory spaces.
+  \item Variable names exist in host and device space: the compiler sorts out which one you mean when you use them in your code.
+  \item Mapping/transfers occur when
+    \begin{itemize}
+      \item enter/exit a \mintinline{fortran}|target| region.
+      \item \mintinline{fortran}|target enter/exit data| constructs.
+      \item \mintinline{fortran}|update| directives.
+    \end{itemize}
+  \item Default behaviour:
+    \begin{itemize}
+      \item Scalars are mapped \mintinline{fortran}|firstprivate|.
+      \item This means the \emph{do not} get copied back to the host.
+      \item Stack arrays are mapped \mintinline{fortran}|tofrom|.
+      \item Heap arrays are not mapped by default.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{The map clause}
+\begin{itemize}
+  \item Specify the transfer of data between host and device on a \mintinline{fortran}|target| region.
+
+  \item On entering the region, copy from host to device:
+    \begin{minted}{fortran}
+    map(to: A(1:N), x)
+    \end{minted}
+
+  \item On exiting the region, copy from device to host. At start of region, these are uninitialised on the device.
+    \begin{minted}{fortran}
+    map(from: A(1:N), x)
+    \end{minted}
+
+  \item Same as applying \mintinline{fortran}|map(to: ...)| and \mintinline{fortran}|map(from: ...)|
+    \begin{minted}{fortran}
+    map(tofrom: A(1:N), x)
+    \end{minted}
+
+  \item Allocate data on the device for use only on the device. It is uninitalised, and can't be copied back to the host.
+    \begin{minted}{fortran}
+    map(alloc: A(1:N))
+    \end{minted}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Enter/exit data directives}
+\begin{itemize}
+  \item Often want to perform initial device data environment setup once, run through iteratative loop, copying back at end.
+  \item \textbf{Do not} want to copy the data every iteration! Very expensive.
+  \item Use \mintinline{fortran}|target enter data| and \mintinline{fortran}|target exit data| constructs to control device data environment.
+\end{itemize}
+
+\begin{minted}[frame=single,fontsize=\small]{fortran}
+!$omp target enter data map(to: A(1:N), B(1:N), C(1:N))
+
+do t = 1, 1000000
+  !$omp target
+  ... ! Read A and B, write C
+  !$omp end target
+end do
+
+!$omp target exit data map(from: C(1:N))
+
+\end{minted}
+Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|target| region in the big loop.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Update directive}
+\begin{itemize}
+  \item Often need to transfer data between host and device between different \mintinline{fortran}|target| regions.
+  \item E.g. the host does something between the two regions.
+  \item Use the \mintinline{fortran}|update| directive to move the data explicitly between host and device.
+  \item Example on next slide\dots
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Update directive}
+\begin{minted}[frame=single,fontsize=\small,linenos]{fortran}
+!$omp target enter data map(to: A(1:N), B(1:N), C(1:N))
+!$omp target
+... ! Use A, B and C on device
+!$omp end target
+
+! Copy A from device to host
+!$omp target update from(A(1:N))
+
+! Change A on the host
+A = 1.0
+
+! Copy A from host to device
+!$omp target update to(A(1:N))
+
+!$omp target
+... ! Use A, B and C on device
+!$omp end target
+
+!$omp target exit data map(from: C(1:N))
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Reductions}
+\begin{minted}[frame=single,breaklines]{fortran}
+integer :: i, N = 1000
+real(kind=8), allocatable :: A(:), B(:)
+real(kind=8) :: total
+
+!$omp target map(to: A(1:N), B(1:N))
+!$omp teams distribute parallel do map(tofrom:total) reduction(+:total)
+do i = 1, N
+  total = total + (A(i) * B(i))
+end do
+!$omp end teams distribute parallel do
+!$omp end target
+\end{minted}
+
+\begin{itemize}
+  \item \mintinline{fortran}|total| is a scalar, so by default is \mintinline{fortran}|firstprivate|.
+  \item I.e. Each thread on the device gets its own copy.
+  \item Importantly, it is not copied back to the host!
+  \item You \emph{must} use a \mintinline{fortran}|map| clause to bring the result back.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{CUDA Toolkit: NVprof}
+\begin{itemize}
+  \item The CUDA toolkit works with code written in OpenMP 4.5 without any special configuration.
+  \item Useful to use the profiler \mintinline{bash}|nvprof|.
+  \item Particularly useful to check it ran on a GPU! Can silently fallback to CPU execution.
+  \item Can generate high level profiling information, a timeline, and generate data for NVIDIA's \mintinline{bash}|nvvp| profiler.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{nvprof output}
+\begin{minted}{bash}
+nvprof ./stencil_target
+TODO
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Exercise}
+\begin{itemize}
+  \item Port your 5-point stencil code to the GPU.
+  \item Use the \mintinline{fortran}|target enter/exit data| constructs to transfer data.
+  \item Use the \mintinline{fortran}|target teams distribute parallel do| construct for execution.
+  \item Print out the grid sum for every iteration:
+    \begin{itemize}
+      \item Need to use \mintinline{fortran}|reduction| clause.
+      \item Remember to \mintinline{fortran}|map| the reduction result!
+    \end{itemize}
+  \item Extra: Think about the performance compared to your CPU version.
+\end{itemize}
+\end{frame}
 %-------------------------------------------------------------------------------
 \end{document}
 
