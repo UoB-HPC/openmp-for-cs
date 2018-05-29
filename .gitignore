@@ -16,6 +16,7 @@ vadd_paralleldo
 vadd_spmd
 stencil
 stencil_paralleldo
+stencil_target
 
 # Misc.
 .*.swp
