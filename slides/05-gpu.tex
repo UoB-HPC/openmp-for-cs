@@ -395,9 +395,79 @@ end do
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{nvprof output}
-\begin{minted}{bash}
+\begin{minted}[fontsize=\tiny]{bash}
 nvprof ./stencil_target
-TODO
+
+==176642== Profiling application: ./stencil_target                                                                                                                                                                                          
+==176642== Profiling result:                                                                                                                                                                                                                
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 86.24%  424.60ms        30  14.153ms  13.776ms  14.637ms  stencil_$ck_L49_1
+  9.44%  46.496ms        33  1.4090ms     895ns  24.381ms  [CUDA memcpy HtoD]
+  4.31%  21.242ms        32  663.82us  1.0240us  11.176ms  [CUDA memcpy DtoH]
+                                                                               
+==176642== API calls:                                           
+Time(%)      Time     Calls       Avg       Min       Max  Name
+ 53.72%  424.69ms        31  13.700ms  1.8730us  14.641ms  cuStreamSynchronize
+ 37.11%  293.35ms         1  293.35ms  293.35ms  293.35ms  cuCtxCreate
+  5.96%  47.091ms        33  1.4270ms  6.9970us  24.584ms  cuMemcpyHtoD                 
+  2.76%  21.844ms        32  682.63us  13.226us  11.304ms  cuMemcpyDtoH
+  0.18%  1.4557ms         1  1.4557ms  1.4557ms  1.4557ms  cuMemHostAlloc
+  0.17%  1.3477ms         5  269.54us  5.2270us  580.42us  cuMemAlloc
+  0.04%  320.63us        30  10.687us  8.6930us  43.243us  cuLaunchKernel
+  0.04%  317.57us         1  317.57us  317.57us  317.57us  cuModuleLoadData
+  0.01%  45.755us         1  45.755us  45.755us  45.755us  cuStreamCreate
+  0.00%  26.802us        34     788ns     283ns  4.3010us  cuEventCreate
+  0.00%  4.3840us        11     398ns     309ns     585ns  cuDeviceGetAttribute
+  0.00%  3.7440us         5     748ns     460ns  1.2540us  cuDeviceGet
+  0.00%  3.6880us         3  1.2290us     356ns  2.7150us  cuDeviceGetCount
+  0.00%  1.0500us         1  1.0500us  1.0500us  1.0500us  cuCtxSetCurrent
+  0.00%  1.0230us         2     511ns     193ns     830ns  cuFuncGetAttribute
+  0.00%     976ns         1     976ns     976ns     976ns  cuModuleGetGlobal
+  0.00%     957ns         1     957ns     957ns     957ns  cuMemHostGetDevicePointer
+  0.00%     806ns         1     806ns     806ns     806ns  cuModuleGetFunction
+  0.00%     604ns         1     604ns     604ns     604ns  cuCtxGetCurrent
+  0.00%     442ns         1     442ns     442ns     442ns  cuFuncSetCacheConfig
+
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{nvprof output}
+\begin{minted}[fontsize=\tiny,linenos,breaklines]{bash}
+nvprof --print-gpu-trace ./stencil_target
+
+==176680== Profiling application: ./stencil_target                                                                                                                                                                                  [74/200]
+==176680== Profiling result:                                                                                                                                             
+   Start  Duration            Grid Size      Block Size     Regs*    SSMem*    DSMem*      Size  Throughput           Device   Context    Stream  Name              
+429.51ms  17.860ms                    -               -         -         -         -  122.19MB  6.6813GB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+447.94ms  15.150ms                    -               -         -         -         -  122.19MB  7.8763GB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]     
+463.46ms  1.4080us                    -               -         -         -         -        8B  5.4186MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+463.47ms     992ns                    -               -         -         -         -        4B  3.8455MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+463.90ms  14.176ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [43] 
+478.15ms  1.5360us                    -               -         -         -         -        8B  4.9671MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+478.61ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+478.63ms  14.277ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [79] 
+492.92ms  1.1200us                    -               -         -         -         -        8B  6.8120MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+492.96ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+492.97ms  14.402ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [83] 
+507.38ms  1.3120us                    -               -         -         -         -        8B  5.8151MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+507.41ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+507.43ms  14.710ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [87] 
+522.15ms  1.3440us                    -               -         -         -         -        8B  5.6766MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+522.18ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]        
+522.19ms  14.349ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [91] 
+536.55ms  1.5360us                    -               -         -         -         -        8B  4.9671MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+536.58ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+536.59ms  14.475ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [95]
+551.07ms  1.1520us                    -               -         -         -         -        8B  6.6227MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+551.10ms  1.0240us                    -               -         -         -         -        8B  7.4506MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+551.12ms  14.233ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [99]
+565.36ms  1.3760us                    -               -         -         -         -        8B  5.5446MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy DtoH]
+565.39ms     992ns                    -               -         -         -         -        8B  7.6909MB/s  Tesla P100-PCIE         1         7  [CUDA memcpy HtoD]
+565.40ms  14.582ms            (128 1 1)       (128 1 1)       103  1.0078KB        0B         -           -  Tesla P100-PCIE         1        14  stencil_$ck_L49_1 [103]
+
+
 \end{minted}
 \end{frame}
 
