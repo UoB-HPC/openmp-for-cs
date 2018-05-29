@@ -35,6 +35,9 @@ program stencil
 
   total_start = sum(A(:,:))
 
+  ! Copy data to device
+  !$omp target enter data map(to: A, Atmp)
+
   ! Start timer
   call wtime(tic)
 
@@ -55,7 +58,7 @@ program stencil
     !$omp end target
 
     ! Print out total
-    write(*,"I0,A,F10.3") t, ": total=", total
+    write(*,"(I0,A,F15.5)") t, ": total=", total
 
     ! Swap pointers
     Aptr => A
@@ -66,6 +69,9 @@ program stencil
 
   ! Stop timer
   call wtime(toc)
+
+  ! Copy data back
+  !$omp target exit data map(from: A, Atmp)
 
   ! Sum up grid values for rudimentary correctness check
   total_end = sum(A(:,:))
