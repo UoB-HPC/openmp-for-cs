@@ -17,7 +17,6 @@
   \item The OpenMP \mintinline{fortran}|target| directive
   \item Memory movement
 \end{itemize}
-Probably need more examples and pictures on these slides
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -147,15 +146,24 @@ Massive amounts of parallelism to exploit.
       \item Allows host thread to continue working. Must synchronise later using tasks.
     \end{itemize}
   \item Other clauses mainly about memory movement, which we'll come to later.
-  \item In general, you'll run loops on the device using:
-  \begin{minted}[frame=single]{fortran}
-  !$omp target teams distribute parallel do
-  do i = 1, N
-    ... ! Loop body
-  end do
-  !$omp end target teams distribute parallel do
-  \end{minted}
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{The one directive you'll need}
+In general, you'll run loops on the device using:
+\begin{minted}[frame=single]{fortran}
+!$omp target teams distribute parallel do
+do i = 1, N
+  ... ! Loop body
+end do
+!$omp end target teams distribute parallel do
+\end{minted}
+
+\begin{alertblock}{Warning!}
+Not using this combined statement can have severe performance issues.
+\end{alertblock}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -178,6 +186,31 @@ Massive amounts of parallelism to exploit.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Execution model: teams}
+\begin{itemize}
+  \item The \mintinline{fortran}|target teams| construct creates a number of teams on the GPU, each containing one thread.
+  \item All threads execute code block.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+  \draw (0,0) rectangle (1,4);
+  \draw[->] (0.5,3.8) -- (0.5,2);
+
+  \draw (2,0) rectangle (3,4);
+  \draw[->] (2.5,3.8) -- (2.5,2);
+
+  \draw (4,0) rectangle (5,4);
+  \draw[->] (4.5,3.8) -- (4.5,2);
+
+  \draw (6,0) rectangle (7,4);
+  \draw[->] (6.5,3.8) -- (6.5,2);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Execution model: distribute}
 \begin{itemize}
@@ -194,6 +227,36 @@ do i = 1, N
 end do
 !$omp end target teams distribute
 \end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Execution model: distribute}
+\begin{itemize}
+  \item The \mintinline{fortran}|target teams distribute| construct distributes loop iterations to the teams.
+  \item Teams still only contain one thread.
+  \item Each team computes a different iteration range.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+  \draw (0,0) rectangle (1,4);
+  \draw[->] (0.5,3.8) -- (0.5,2);
+  \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
+
+  \draw (2,0) rectangle (3,4);
+  \draw[->] (2.5,3.8) -- (2.5,2);
+  \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
+
+  \draw (4,0) rectangle (5,4);
+  \draw[->] (4.5,3.8) -- (4.5,2);
+  \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
+
+  \draw (6,0) rectangle (7,4);
+  \draw[->] (6.5,3.8) -- (6.5,2);
+  \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
+\end{tikzpicture}
+\end{center}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -214,6 +277,64 @@ do i = 1, N
 end do
 !$omp end target teams distribute parallel do
 \end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Execution model: parallel do}
+\begin{itemize}
+  \item The \mintinline{fortran}|target teams distribute parallel do| construct launches threads in each team.
+  \item Threads in the team share iteration space assigned by \mintinline{fortran}|distribute| construct.
+  \item Finally have lots of parallel execution!
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+  % Draw teams
+  \draw (0,0) rectangle (1,4);
+  \draw (2,0) rectangle (3,4);
+  \draw (4,0) rectangle (5,4);
+  \draw (6,0) rectangle (7,4);
+
+  % Draw 5 threads in each team
+  \foreach \j in {0, 2, 4, 6} {
+    \foreach \i in {0.1, 0.3, 0.5, 0.7, 0.9} {
+      \draw[->] (\j+\i,3.8) -- (\j+\i,2);
+    }
+  }
+
+  % Label iteration space
+  \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
+  \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
+  \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
+  \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
+
+  % Label thread iterations
+  \draw (0.5, 1.5) node {\tiny\mintinline{fortran}|0:1,5|};
+  \draw (0.5, 1.3) node {\tiny\mintinline{fortran}|1:6,10|};
+  \draw (0.5, 1.1) node {\tiny\mintinline{fortran}|2:7,15|};
+  \draw (0.5, 0.9) node {\tiny\mintinline{fortran}|3:16,20|};
+  \draw (0.5, 0.7) node {\tiny\mintinline{fortran}|4:21,25|};
+
+  \draw (2.5, 1.5) node {\tiny\mintinline{fortran}|0:26,30|};
+  \draw (2.5, 1.3) node {\tiny\mintinline{fortran}|1:31,35|};
+  \draw (2.5, 1.1) node {\tiny\mintinline{fortran}|2:36,40|};
+  \draw (2.5, 0.9) node {\tiny\mintinline{fortran}|3:41,45|};
+  \draw (2.5, 0.7) node {\tiny\mintinline{fortran}|4:46,50|};
+
+  \draw (4.5, 1.5) node {\tiny\mintinline{fortran}|0:51,55|};
+  \draw (4.5, 1.3) node {\tiny\mintinline{fortran}|1:56,60|};
+  \draw (4.5, 1.1) node {\tiny\mintinline{fortran}|2:61,65|};
+  \draw (4.5, 0.9) node {\tiny\mintinline{fortran}|3:66,70|};
+  \draw (4.5, 0.7) node {\tiny\mintinline{fortran}|4:71,75|};
+
+  \draw (6.5, 1.5) node {\tiny\mintinline{fortran}|0:76,80|};
+  \draw (6.5, 1.3) node {\tiny\mintinline{fortran}|1:81,85|};
+  \draw (6.5, 1.1) node {\tiny\mintinline{fortran}|2:86,90|};
+  \draw (6.5, 0.9) node {\tiny\mintinline{fortran}|3:91,95|};
+  \draw (6.5, 0.7) node {\tiny\mintinline{fortran}|4:96,100|};
+\end{tikzpicture}
+\end{center}
 \end{frame}
 
 %-------------------------------------------------------------------------------
