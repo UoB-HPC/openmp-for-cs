@@ -21,15 +21,127 @@
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{NUMA}
+\frametitle{NUMA Architecture}
+\begin{itemize}
+  \item In reality on a dual-socket system, each socket is physically connected to half of the memory.
+  \item A core in the first socket wanted memory attatched to the other socket must:
+    \begin{itemize}
+      \item Go via the socket-to-socket interconnect.
+      \item Access memory via the other socket's memory controllers.
+    \end{itemize}
+  \item Accessing memory from other socket is slower than access from own socket.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}
+  % Draw 4 cores for socket 0
+  \foreach \i in {0,1,3,4} {
+    \foreach \j in {0, 1} {
+      \draw (\i,\j) rectangle (\i+1,\j+1);
+    }
+  }
+
+  % Draw large memory
+  \draw (-0.5,3) rectangle (2.3,4);
+  \draw (2.7,3) rectangle (5.5,4);
+  \draw[dashed] (-0.7,2.8) rectangle (5.7,4.2);
+
+  % Connect sockets to memory
+  \draw (1,2) -- (1,3);
+  \draw (4,2) -- (4,3);
+  \draw[dashed] (2,1) -- (3,1); % QPI
+
+\end{tikzpicture}
+\end{center}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{OpenMP proc bind}
+\frametitle{Memory allocation}
+\begin{itemize}
+  \item What happens when you call \mintinline{fortran}|allocate(A(1:N))|?
+  \pause
+  \item Allocating memory does not necessarily allocate memory!
+  \item OS tends to use a \emph{first touch policy}.
+  \item Memory is allowed when it's first used, a page at a time.
+  \item In a NUMA architecture, this means the first thread to touch the array causes creation of space in the memory closest to that core.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Taking advantage of first touch}
+\begin{itemize}
+  \item Parallelising your data initilisation routine might mean your main loops go faster!
+\end{itemize}
+
+
+\begin{minted}[fontsize=\small,linenos,frame=single]{fortran}
+! Allocate and initilise vectors
+allocate(A(N), B(N), C(N))
+!$omp parallel do
+do i = 1, N
+  A(i) = 1.0
+  B(i) = 2.0
+  C(i) = 0.0
+end do
+!$omp end parallel do
+
+! Vector add
+!$omp parallel do
+do i = 1, N
+  C(i) = A(i) + B(i)
+end do
+!$omp end parallel do
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{NUMA-aware}
+\begin{itemize}
+  \item Parallelise your initilisation routines the same way you parallelise the main loops.
+  \item This means each thread touches the same data in initilisation and compute.
+  \item Should reduce the number of remote memory accesses needed and improve run times.
+  \item But, OS is allowed to move threads around cores, and between sockets.
+  \item This will mess up your NUMA aware code!
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Pinning threads}
+\begin{itemize}
+  \item OpenMP gives you the controls to pin threads to specific cores.
+  \item Exposed as \emph{places} and \emph{thread pinning policy} to those places.
+  \item By default there is one place consiting of all the cores.
+  \item Use the \mintinline{bash}|OMP_PROC_BIND| environment variable to set pinning for all \mintinline{fortran}|parallel| regions.
+  \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but advice against this.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{OMP\_PROC\_BIND}
+\begin{itemize}
+  \item \mintinline{bash}|OMP_PROC_BIND=false|: The default; threads may move!
+  \item \mintinline{bash}|OMP_PROC_BIND=true|: Threads won't move, and follow \mintinline{fortran}|proc_bind| clauses or else the implementation default pinning.
+  \item \mintinline{bash}|OMP_PROC_BIND=master|: Threads pinned to same place as master thread.
+  \item \mintinline{bash}|OMP_PROC_BIND=close|: Threads are assigned to places close to the master thread.
+  If \mintinline{bash}|OMP_NUM_THREADS=ncores|: thread 0 will pin to core 0; thread 1 will pin to core 1; etc
+  \item \mintinline{bash}|OMP_PROC_BIND=spread|: Threads are assigned to places ``sparsely''.
+  If \mintinline{bash}|OMP_NUM_THREADS=ncores|: thread 0 will pin to socket 0 core 0; thread 1 will pin to socket 1 core 0; thread 2 will pin to socket 0 core 1; etc.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Places}
+OMP PLACES
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Hybrid MPI and OpenMP}
 \begin{frame}
 \frametitle{Why combine MPI+OpenMP}
 Include scaling results
