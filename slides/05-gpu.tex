@@ -10,16 +10,21 @@
 \frame{\titlepage}
 
 %-------------------------------------------------------------------------------
+\section{Outline}
 \begin{frame}
 \frametitle{Outline}
 \begin{itemize}
   \item GPU introduction
-  \item The OpenMP \mintinline{fortran}|target| directive
+  \item The OpenMP \mintinline{fortran}|target| construct
+  \item Device data environment
   \item Memory movement
+  \item Asynchronous offload
+  \item Tools
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{GPU introduction}
 \begin{frame}
 \frametitle{GPU performance}
 
@@ -92,6 +97,7 @@ Massive amounts of parallelism to exploit.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{OpenMP device model}
 \begin{frame}[fragile]
 \frametitle{Device model}
 \begin{itemize}
@@ -132,15 +138,16 @@ Massive amounts of parallelism to exploit.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Target construct}
 \begin{frame}[fragile]
-\frametitle{The target directive}
+\frametitle{The target construct}
 \begin{minted}{fortran}
 !$omp target [clause [clause]...]
 !$omp end target 
 \end{minted}
 \begin{itemize}
   \item Starts executing \emph{in serial} on the target device.
-  \item Need other directives to expand parallelism.
+  \item Need other constructs to expand parallelism.
   \item \mintinline{fortran}|nowait| clause:
     \begin{itemize}
       \item Allows host thread to continue working. Must synchronise later using tasks.
@@ -151,7 +158,7 @@ Massive amounts of parallelism to exploit.
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
-\frametitle{The one directive you'll need}
+\frametitle{The one construct you'll need}
 In general, you'll run loops on the device using:
 \begin{minted}[frame=single]{fortran}
 !$omp target teams distribute parallel do
@@ -173,8 +180,8 @@ Not using this combined statement can have severe performance issues.
   \item OpenMP \emph{threads} on a device are grouped into a \emph{team}.
   \item Can synchronise threads \emph{within} a team. \emph{Cannot} synchronise between teams.
   \item Groups of teams are called a \emph{league}.
-  \item \mintinline{fortran}|target| directive offloads (serial) execution to device.
-  \item \mintinline{fortran}|teams| directive creates a league of times.
+  \item \mintinline{fortran}|target| construct offloads (serial) execution to device.
+  \item \mintinline{fortran}|teams| construct creates a league of times.
   \item Master thread in each team (redundantly) executes the code.
 \end{itemize}
 
@@ -265,7 +272,7 @@ end do
 \begin{itemize}
   \item Same semantics as on the CPU!
   \item Launches threads within the team and shares iterations between threads.
-  \item Note, iterations that were assigned to the team by \mintinline{fortran}|distribute| directive are shared between threads in the team.
+  \item Note, iterations that were assigned to the team by \mintinline{fortran}|distribute| construct are shared between threads in the team.
   \item Can use the \mintinline{fortran}|schedule| clause too.
   \item Remember, can synchronise between threads in the team.
 \end{itemize}
@@ -350,6 +357,7 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Data transfers}
 \begin{frame}
 \frametitle{Data movement}
 \begin{itemize}
@@ -375,7 +383,7 @@ end do
     \begin{itemize}
       \item enter/exit a \mintinline{fortran}|target| region.
       \item \mintinline{fortran}|target enter/exit data| constructs.
-      \item \mintinline{fortran}|update| directives.
+      \item \mintinline{fortran}|update| construct.
     \end{itemize}
   \item Default behaviour:
     \begin{itemize}
@@ -388,6 +396,7 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Map clause}
 \begin{frame}[fragile]
 \frametitle{The map clause}
 \begin{itemize}
@@ -420,8 +429,9 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Enter/exit data constructs}
 \begin{frame}[fragile]
-\frametitle{Enter/exit data directives}
+\frametitle{Enter/exit data constructs}
 \begin{itemize}
   \item Often want to perform initial device data environment setup once, run through iteratative loop, copying back at end.
   \item \textbf{Do not} want to copy the data every iteration! Very expensive.
@@ -444,19 +454,20 @@ Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|t
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Update}
 \begin{frame}
-\frametitle{Update directive}
+\frametitle{Update construct}
 \begin{itemize}
   \item Often need to transfer data between host and device between different \mintinline{fortran}|target| regions.
   \item E.g. the host does something between the two regions.
-  \item Use the \mintinline{fortran}|update| directive to move the data explicitly between host and device.
+  \item Use the \mintinline{fortran}|update| construct to move the data explicitly between host and device.
   \item Example on next slide\dots
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
-\frametitle{Update directive}
+\frametitle{Update construct}
 \begin{minted}[frame=single,fontsize=\small,linenos]{fortran}
 !$omp target enter data map(to: A, B, C)
 !$omp target
@@ -482,6 +493,7 @@ A = 1.0
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Reductions}
 \begin{frame}[fragile]
 \frametitle{Reductions}
 \begin{minted}[frame=single,breaklines]{fortran}
@@ -508,6 +520,7 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Nowait clause}
 \begin{frame}
 \frametitle{Asynchronous offload}
 \begin{itemize}
@@ -541,6 +554,7 @@ call expensive_io_routine()
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Tools}
 \begin{frame}
 \frametitle{CUDA Toolkit: NVprof}
 \begin{itemize}
@@ -631,6 +645,7 @@ nvprof --print-gpu-trace ./stencil_target
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Exercise}
 \begin{frame}
 \frametitle{Exercise}
 \begin{itemize}
