@@ -17,3 +17,5 @@ The slides are written in LaTeX, using the following packages:
 - fontenc
 - multicol
 - booktabs
+- adjustbox
+
