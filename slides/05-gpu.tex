@@ -509,6 +509,39 @@ end do
 
 %-------------------------------------------------------------------------------
 \begin{frame}
+\frametitle{Asynchronous offload}
+\begin{itemize}
+  \item By default, the host thread will idle and wait for the \mintinline{fortran}|target| region to complete.
+  \item The \mintinline{fortran}|nowait| clause causes the \mintinline{fortran}|target| region to be offloaded as a task.
+  \item The host thread can continue working asynchronously with the device!
+  \item Must synchronise using \mintinline{fortran}|taskwait|, or at a \mintinline{fortran}|barrier| (explicit or implicit) depending on host threading design.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Asynchronous offload}
+\begin{minted}[linenos,frame=single]{fortran}
+
+!$omp target nowait
+!$omp teams distribute parallel do
+do i = 1, 10000000
+  ... ! Lots of work
+end do
+!$omp end teams distribute parallel do
+!$omp end target
+! Host just continues because of nowait
+
+call expensive_io_routine()
+
+! Wait for target task to finish
+!$omp tastwait
+
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
 \frametitle{CUDA Toolkit: NVprof}
 \begin{itemize}
   \item The CUDA toolkit works with code written in OpenMP 4.5 without any special configuration.
