@@ -793,6 +793,22 @@ Be careful how you use this. It's very easy to oversubscribe threads. Thread aff
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Multi-line directives}
+\begin{itemize}
+  \item Sometimes OpenMP directives can be quite long.
+  \item Nicer to split up the directive across lines in the source file.
+\end{itemize}
+
+\begin{minted}{fortran}
+!$omp construct &
+!$omp& clause
+!$omp$ clause
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{5-point stencil example}
 First exercise: parallelise a simple 5-point stencil code using OpenMP.
