@@ -393,24 +393,28 @@ end do
 \begin{itemize}
   \item Specify the transfer of data between host and device on a \mintinline{fortran}|target| region.
 
+  \item Assume we have an array \mintinline{fortran}|A(1:N)| and a scalar \mintinline{fortran}|x|.
+  \item Can use array slicing, but slicing whole array buggy with Cray compiler.
+
   \item On entering the region, copy from host to device:
     \begin{minted}{fortran}
-    map(to: A(1:N), x)
+    map(to: A), x)
     \end{minted}
 
   \item On exiting the region, copy from device to host. At start of region, these are uninitialised on the device.
     \begin{minted}{fortran}
-    map(from: A(1:N), x)
+    map(from: A, x)
     \end{minted}
 
   \item Same as applying \mintinline{fortran}|map(to: ...)| and \mintinline{fortran}|map(from: ...)|
     \begin{minted}{fortran}
-    map(tofrom: A(1:N), x)
+    map(tofrom: A), x)
     \end{minted}
 
-  \item Allocate data on the device for use only on the device. It is uninitalised, and can't be copied back to the host.
+  \item Allocate data on the device without copying from the host. It is uninitalised.
+      Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated to host too.
     \begin{minted}{fortran}
-    map(alloc: A(1:N))
+    map(alloc: A)
     \end{minted}
 \end{itemize}
 \end{frame}
@@ -425,7 +429,7 @@ end do
 \end{itemize}
 
 \begin{minted}[frame=single,fontsize=\small]{fortran}
-!$omp target enter data map(to: A(1:N), B(1:N), C(1:N))
+!$omp target enter data map(to: A, B, C)
 
 do t = 1, 1000000
   !$omp target
@@ -454,7 +458,7 @@ Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|t
 \begin{frame}[fragile]
 \frametitle{Update directive}
 \begin{minted}[frame=single,fontsize=\small,linenos]{fortran}
-!$omp target enter data map(to: A(1:N), B(1:N), C(1:N))
+!$omp target enter data map(to: A, B, C)
 !$omp target
 ... ! Use A, B and C on device
 !$omp end target
@@ -472,7 +476,7 @@ A = 1.0
 ... ! Use A, B and C on device
 !$omp end target
 
-!$omp target exit data map(from: C(1:N))
+!$omp target exit data map(from: C)
 \end{minted}
 
 \end{frame}
@@ -485,8 +489,8 @@ integer :: i, N = 1000
 real(kind=8), allocatable :: A(:), B(:)
 real(kind=8) :: total
 
-!$omp target map(to: A(1:N), B(1:N))
-!$omp teams distribute parallel do map(tofrom:total) reduction(+:total)
+!$omp target map(to: A, B) map(tofrom: total)
+!$omp teams distribute parallel do reduction(+:total)
 do i = 1, N
   total = total + (A(i) * B(i))
 end do
