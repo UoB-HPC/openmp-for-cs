@@ -60,6 +60,7 @@ Organised as 6 sessions teaching OpenMP plus top-tips for getting good performan
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{OpenMP introduction}
 \begin{frame}
 \frametitle{What is OpenMP?}
 
@@ -102,6 +103,7 @@ Limited scoping in Fortran means often need \emph{end} directives.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Compiler flags}
 \begin{frame}[fragile]
 \frametitle{Building with OpenMP}
 
@@ -125,6 +127,7 @@ The library only gets you the API calls.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Memory and execution model}
 \begin{frame}
 \frametitle{Shared memory}
 OpenMP is for shared memory programming: all threads have access to a shared address space.
@@ -222,6 +225,7 @@ Nested threads are allowed, where a thread forks its own team of threads.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Going parallel}
 \begin{frame}[fragile]
 \frametitle{Creating OpenMP threads}
 \begin{minted}[frame=single, linenos]{fortran}
@@ -335,6 +339,7 @@ The OpenMP API gives you calls to determine thread information when \emph{inside
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Example: vector addition}
 \begin{frame}[fragile]
 \frametitle{Vector add}
 Walkthrough parallelising vector addition using OpenMP.
@@ -446,6 +451,7 @@ Be careful with your index calculation.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Worksharing}
 \begin{frame}[fragile]
 \frametitle{Worksharing}
 
@@ -521,6 +527,7 @@ Next time: the rest of the OpenMP common core.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Scheduling}
 \begin{frame}[fragile]
 \frametitle{The Schedule clause}
 \begin{itemize}
@@ -655,6 +662,7 @@ schedule(runtime)
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Loops}
 \begin{frame}[fragile]
 \frametitle{Nested loops}
 \begin{itemize}
@@ -690,6 +698,7 @@ More on this when we talk about vectorisation in another session.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Synchronisation}
 \begin{frame}[fragile]
 \frametitle{The nowait clause}
 \begin{itemize}
@@ -770,6 +779,7 @@ B(tid) = big_work2(A, tid)
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Miscellaneous}
 \begin{frame}[fragile]
 \frametitle{Nested threads}
 \begin{itemize}
@@ -809,6 +819,7 @@ Be careful how you use this. It's very easy to oversubscribe threads. Thread aff
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Exercise}
 \begin{frame}
 \frametitle{5-point stencil example}
 First exercise: parallelise a simple 5-point stencil code using OpenMP.
