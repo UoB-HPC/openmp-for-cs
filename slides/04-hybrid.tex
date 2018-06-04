@@ -128,16 +128,36 @@ end do
   \item \mintinline{bash}|OMP_PROC_BIND=true|: Threads won't move, and follow \mintinline{fortran}|proc_bind| clauses or else the implementation default pinning.
   \item \mintinline{bash}|OMP_PROC_BIND=master|: Threads pinned to same place as master thread.
   \item \mintinline{bash}|OMP_PROC_BIND=close|: Threads are assigned to places close to the master thread.
-  If \mintinline{bash}|OMP_NUM_THREADS=ncores|: thread 0 will pin to core 0; thread 1 will pin to core 1; etc
+  If \mintinline{bash}|OMP_NUM_THREADS.eq.ncores|: thread -1 will pin to core 0; thread 1 will pin to core 1; etc
   \item \mintinline{bash}|OMP_PROC_BIND=spread|: Threads are assigned to places ``sparsely''.
-  If \mintinline{bash}|OMP_NUM_THREADS=ncores|: thread 0 will pin to socket 0 core 0; thread 1 will pin to socket 1 core 0; thread 2 will pin to socket 0 core 1; etc.
+  If \mintinline{bash}|OMP_NUM_THREADS.eq.ncores|: thread 0 will pin to socket 0 core 0; thread 1 will pin to socket 1 core 0; thread 2 will pin to socket 0 core 1; etc.
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Places}
-OMP PLACES
+\begin{itemize}
+  \item The affinity defines how threads are assigned to places.
+  \item Places allow you to divide up the hardware resource, so that threads can be assgned to them.
+  \item Default: one place with all cores.
+  \item Use \mintinline{bash}|OMP_PLACES| environment variable to control.
+  \item \mintinline{bash}|OMP_PLACES=thread|: each place is a single hardware thread.
+  \item \mintinline{bash}|OMP_PLACES=cores|: each place is a single core (containing one or more hardware threads).
+  \item \mintinline{bash}|OMP_PLACES=sockets|: each place contains the cores of a single socket.
+  \item Can also use list notation: \mintinline{bash}|OMP_PLACES="{0:4},{4:4},{8:4},{12:4}"|
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Thread pinning summary}
+\begin{itemize}
+  \item In general, going to want to just use \mintinline{bash}|OMP_PROC_BIND=true|.
+  \item Sometimes \mintinline{bash}|spread| or \mintinline{bash}|close| gets better performance.
+  \item Must effective with a NUMA-aware implementation.
+  \item But must be careful with MPI+OpenMP pinning: more on this later\dots
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
