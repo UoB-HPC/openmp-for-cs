@@ -65,18 +65,110 @@ Vector operations \\
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Why vectorise?}
-
+\begin{itemize}
+  \item Vectorisation gives you more compute per cycle.
+  \item Hence increases the FLOPS/s rate of the processor.
+  \item Also results in fewer instructions to process (less presure on instruction decode units).
+  \item Vectors help make good use of the memory hierarchy.
+  \item Helps you write code which has good access patterns to maximise bandwidth.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Auto-vectorisation}
-Compiler reports
+\begin{itemize}
+  \item Modern compilers are very good to automatically vectorising your loops.
+  \item Fortran helps as arrays do not alisas (overlap).
+  \item But compiler needs to be sure it's safe to vectorise.
+  \item Read compiler reports to see if it's already vectorising.
+    \begin{itemize}
+      \item Intel: \mintinline{bash}|-qopt-report=5|
+      \item Cray: \mintinline{bash}|-hlist=a|
+    \end{itemize}
+  \item Often memory access pattern which prevents (efficient) auto-vectorisation.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{OpenMP SIMD}
+\begin{itemize}
+  \item Sometimes the compiler needs help in confirming loops are vectorisable.
+  \item OpenMP \mintinline{fortran}|simd| constructs give this information.
+  \item Can combine with \mintinline{fortran}|parallel do| construct to ensure a parallel vector loop.
+  \item Generally want to vectorise inner loops and parallelise outer loops.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp simd
+do i = 1, N
+  C(i) = A(i)+B(i)
+end do
+!$omp end simd
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{SIMD functions}
+Often have written an update function to update values in the loop:
+\begin{minted}[frame=single]{fortran}
+do i = 1, N
+  A(i) = magic_maths(A(i))
+end do
+\end{minted}
+
+\begin{itemize}
+  \item The situation gets complicated.
+  \item If the function is small, then likely inlined and loop will auto-vectorise.
+  \item Otherwise need to use the \mintinline{fortran}|simd| construct, but need compiler to create a vector version of the function.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+function magic_maths(value) result(r)
+!$omp declare simd(magic_maths)
+  implicit none
+  real(kind=8) :: value, r
+  r = value * value
+end function
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{SIMD clauses}
+\begin{itemize}
+  \item All the usual data-sharing and reduction clauses can be applied.
+  \item \mintinline{fortran}|safelen(4)|: distance between iterations where its safe to vectorise.
+  \begin{minted}[frame=single]{fortran}
+  !$omp simd safelen(4)
+  do i = 1, N-4
+    A(i) = A(i) + A(i+4)
+  end do
+  !$omp end simd
+  \end{minted}
+  \item \mintinline{fortran}|simdlen(4)|: prefered iterations to be performed concurrently as a vector.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{SIMD clauses}
+\begin{itemize}
+  \item \mintinline{fortran}|linear(var)|: variable is private and linear to the loop iterator.
+  \begin{minted}[frame=single]{fortran}
+  !$omp simd linear(j)
+  do i = 1, N
+    j = j + 1
+    A(j) = B(i)
+  end do
+  !$omp end simd
+  \end{minted}
+  \item \mintinline{fortran}|aligned(var)|: says the array is aligned (more on this shortly).
+  \item \mintinline{fortran}|uniform(var)|: for \mintinline{fortran}|declare simd| construct, the variable is the same in all vector lanes.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
