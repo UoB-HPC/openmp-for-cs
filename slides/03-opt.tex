@@ -172,8 +172,65 @@ end function
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Derived types}
+2D grid of cells; each cell containing 4 different values.
+\begin{minted}[frame=single,linenos,fontsize=\small]{fortran}
+type cell
+  real(kind=8) :: property1
+  real(kind=8) :: property2
+  real(kind=8) :: property3
+  real(kind=8) :: property4
+end type
+
+type(cell), allocatable :: grid(:,:)
+
+do j = 1, ny
+  do i = 1, nx
+    grid(i,j)%property1 = update_1()
+    grid(i,j)%property2 = update_2()
+    grid(i,j)%property3 = update_3()
+    grid(i,j)%property4 = update_4()
+  end do
+end do
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Derived types}
+\begin{itemize}
+  \item What do Fortran derived types look like in memory?
+  \item<2-> What happens when we vectorise?
+\end{itemize}
+
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (0,0) grid (13,1);
+  \foreach \i in {0,4,8,12} {
+    \draw (\i+.5,.5) node {P1};
+  }
+  \foreach \i in {0,4,8} {
+    \draw (\i+1.5,.5) node {P2};
+    \draw (\i+2.5,.5) node {P3};
+    \draw (\i+3.5,.5) node {P4};
+  }
+
+  \pause
+  \foreach \i in {0,4,8,12} {
+    \draw[->] (\i+.5,-1) -- (\i+.5,0);
+  }
+\end{tikzpicture}
+\end{adjustbox}
+
+\onslide<2->{
+\begin{itemize}
+  \item The \mintinline{fortran}|property1| values are gathered into a vector register.
+  \item After the computation, the results are scattered back into memory.
+  \item A cache line is 64 bytes, so only the first two values are on the first cache line.
+  \item Must read two cache lines to fill the vector up.
+\end{itemize}
+}
 AoS vs SoA
 \end{frame}
 
