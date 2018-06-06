@@ -32,7 +32,101 @@ Now you know how to parallelise programs using OpenMP, how do you write fast pro
 %-------------------------------------------------------------------------------
 \section{Performance analysis}
 \begin{frame}
-\frametitle{Roofline models}
+\frametitle{Performance analysis}
+\begin{itemize}
+  \item Optimisations can help code go faster, but how do you know when it's performing \emph{well}?
+  \item Helpful to think about characteristics of the algorithm:
+    \begin{itemize}
+      \item Algorithmic complexity for compute.
+      \item Algorithmic complexity for data movement.
+    \end{itemize}
+  \item Examples:
+    \begin{itemize}
+      \item Vector-vector and vector-matrix are $O(n)$ for compute and data movement.
+      \item Matrix-matrix multiply is $O(n^3)$ for compute and $O(n^2)$ for data movement.
+      \item Matrix multiplication becomes \emph{compute bound} at large enough $n$, but other examples remain memory bandwidth bound.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Rate limiting factors}
+\begin{itemize}
+  \item Most HPC codes are \emph{memory bandwidth bound}.
+  \item A few are \emph{compute bound}.
+  \item Other possibilities:
+    \begin{itemize}
+      \item Network bound (e.g. MPI communication).
+      \item I/O bound (e.g. writing to the filesystem).
+      \item Memory latency bound.
+      \item Memory capacity bound.
+      \item \dots
+    \end{itemize}
+  \item Worth thinking about the bound for your own code.
+  \item Arithmetic (integer and floating point) is very cheap $O(1)$ cycle.
+  \item Division, transcendentals, exponentials/logs are exceptions.
+  \item Load/store is 2--3 times slower if hit L1 cache (best case).
+  \item Consider the ratio of bytes moved vs. floating point operations.
+\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Computational intensity}
+\begin{itemize}
+  \item The radio of FLOPS to bytes moved is known as \emph{computational intensity}.
+  \item Originally only DRAM traffic counted, but this causes problems.
+  \item Bytes moved is best calculated from the kernel perspective.
+  \item Take this example:
+    \begin{itemize}
+      \item \mintinline{fortran}|a(i) = a(i) + b(i) * c(i)|
+      \item FP64 arrays. 24 bytes loaded, 8 bytes stored, 2 operations.
+      \item CI of $2/32 = 1/16$.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Roofline model}
+Useful conceptual tool to establish whether compute or memory bandwidth bound.
+
+\begin{center}
+\begin{adjustbox}{max width={.7\textwidth}}
+\begin{tikzpicture}
+  \draw[->] (0,0)   -- (0,3);
+  \draw[->] (0,0)   -- (7,0);
+  \draw     (0,1)   -- (2,2.5);
+  \draw     (2,2.5) -- (7,2.5);
+  \node at (3.5,-0.5) {Computational intensity (FLOPS/byte)};
+  \node[rotate=90] at (-0.5,1.5) {FLOPS/s};
+  \node at (7.5,2.4) {$F(I)$};
+  \node at (4,1) {A};
+  \node at (0.75,1) {B};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\begin{itemize}
+  \item Runtime performance of kernel gives FLOP/s, analysis of bytes/flops gives CI.
+  \item Kernel A is compute bound.
+  \item Kernel B is memory bandwidth bound.
+  \item Both kernels require optimisation!
+  \item If kernel is on the roof, then rate limiting factor is achieved.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Intel Advisor: Roofline}
+\begin{itemize}
+  \item Can use Intel Advisor to run a Roofline analysis on your code.
+  \item First, it runs some microbenchmarks to generate the Roofline model.
+  \item Then, it runs your code, calculating the CI and performance.
+  \item Can be helpful to visualise how performant your code is.
+  \item More information: \url{https://software.intel.com/en-us/articles/intel-advisor-roofline}.
+  \item But beware, the CI is calculated from executed instructions, so not always the whole picture.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
