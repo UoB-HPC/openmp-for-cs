@@ -249,7 +249,7 @@ Full implementation: \mintinline{bash}|pi.f90|.
 \begin{itemize}
   \item Add a simple \mintinline{fortran}|!$omp parallel do|\dots
   \item But need to be careful changing the \mintinline{fortran}|sum| as this will be \emph{shared} between threads.
-  \item A \mintinline{fortran}|critical| region only allows one thread to excute at any one time. No guarentees of ordering.
+  \item A \mintinline{fortran}|critical| region only allows one thread to execute at any one time. No guarantees of ordering.
 \end{itemize}
 
 \begin{minted}[linenos,breaklines,frame=single]{fortran}
@@ -432,7 +432,7 @@ This code is susceptible to \emph{false sharing}.
   \item False sharing occurs when different threads update data on the same cache line.
   \item Cache system is coherent between cores, so data consistency must be maintained.
   \item The cache line is no longer up to date because another thread changed it (in their local cache).
-  \item Therefore, cache line must be flushed to memory and reread into the other thread everytime.
+  \item Therefore, cache line must be flushed to memory and reread into the other thread every time.
   \item This is an example of \emph{cache thrashing}.
   \item The performance is reduced as threads must wait for the cache lines to refresh.
 \end{itemize}
