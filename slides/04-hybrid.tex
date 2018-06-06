@@ -26,7 +26,7 @@
 \frametitle{NUMA Architecture}
 \begin{itemize}
   \item In reality on a dual-socket system, each socket is physically connected to half of the memory.
-  \item A core in the first socket wanted memory attatched to the other socket must:
+  \item A core in the first socket wanted memory attached to the other socket must:
     \begin{itemize}
       \item Go via the socket-to-socket interconnect.
       \item Access memory via the other socket's memory controllers.
@@ -74,12 +74,12 @@
 \begin{frame}[fragile]
 \frametitle{Taking advantage of first touch}
 \begin{itemize}
-  \item Parallelising your data initilisation routine might mean your main loops go faster!
+  \item Parallelising your data initialisation routine might mean your main loops go faster!
 \end{itemize}
 
 
 \begin{minted}[fontsize=\small,linenos,frame=single]{fortran}
-! Allocate and initilise vectors
+! Allocate and initialise vectors
 allocate(A(N), B(N), C(N))
 !$omp parallel do
 do i = 1, N
@@ -103,8 +103,8 @@ end do
 \begin{frame}
 \frametitle{NUMA-aware}
 \begin{itemize}
-  \item Parallelise your initilisation routines the same way you parallelise the main loops.
-  \item This means each thread touches the same data in initilisation and compute.
+  \item Parallelise your initialisation routines the same way you parallelise the main loops.
+  \item This means each thread touches the same data in initialisation and compute.
   \item Should reduce the number of remote memory accesses needed and improve run times.
   \item But, OS is allowed to move threads around cores, and between sockets.
   \item This will mess up your NUMA aware code!
@@ -118,7 +118,7 @@ end do
 \begin{itemize}
   \item OpenMP gives you the controls to pin threads to specific cores.
   \item Exposed as \emph{places} and \emph{thread pinning policy} to those places.
-  \item By default there is one place consiting of all the cores.
+  \item By default there is one place consisting of all the cores.
   \item Use the \mintinline{bash}|OMP_PROC_BIND| environment variable to set pinning for all \mintinline{fortran}|parallel| regions.
   \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but advice against this.
 \end{itemize}
@@ -143,7 +143,7 @@ end do
 \frametitle{Places}
 \begin{itemize}
   \item The affinity defines how threads are assigned to places.
-  \item Places allow you to divide up the hardware resource, so that threads can be assgned to them.
+  \item Places allow you to divide up the hardware resource, so that threads can be assigned to them.
   \item Default: one place with all cores.
   \item Use \mintinline{bash}|OMP_PLACES| environment variable to control.
   \item \mintinline{bash}|OMP_PLACES=thread|: each place is a single hardware thread.
@@ -184,7 +184,7 @@ mpirun -np 16 ./a.out
 \end{minted}
 
 \begin{itemize}
-  \item 16 processes are spawned on one (or more) nodes according to the hostname list file given by the queueing system.
+  \item 16 processes are spawned on one (or more) nodes according to the hostname list file given by the queuing system.
     \begin{itemize}
       \item E.g. with PBS (\mintinline{bash}|qsub|, etc.) set by \mintinline{bash}|$PBS_NODEFILE|.
     \end{itemize}
@@ -221,7 +221,7 @@ mpirun -np 16 ./a.out
 \frametitle{Combining OpenMP and MPI}
 \begin{itemize}
   \item MPI assumes that each MPI process does not spawn anything else.
-  \item Must initilise MPI differently if using threads!
+  \item Must initialise MPI differently if using threads!
   \begin{minted}{fortran}
   call MPI_Init_thread(required, provided, ierr)
   \end{minted}
@@ -298,7 +298,7 @@ Any thread can call MPI whenever it likes. The \mintinline{fortran}|MPI_THREAD_M
   \item Launch 64 MPI ranks: 1 per core.
     \begin{itemize}
       \item This is flat MPI.
-      \item Launching OpenMP threads will overallocate threads compared to hardware resource.
+      \item Launching OpenMP threads will over allocate threads compared to hardware resource.
       \item Warning: things will slow down.
     \end{itemize}
   \item Launch 4 MPI ranks (one per socket).
@@ -426,7 +426,7 @@ Use \mintinline{bash}|--report-bindings| flag to see what's being pinned where.
 \frametitle{Exercise}
 \begin{itemize}
   \item Make your parallel 5-point stencil code NUMA aware.
-  \item Parallelise the initilisation routine.
+  \item Parallelise the initialisation routine.
   \item Experiment with thread affinity.
 \end{itemize}
 \end{frame}
