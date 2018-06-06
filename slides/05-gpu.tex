@@ -110,7 +110,7 @@ Massive amounts of parallelism to exploit.
   !$omp target [clause [clause] ...]
   !$omp end target
   \end{minted}
-  \item Host executiuon idels until target region completes (exact semantics based on tasks).
+  \item Host execution idles until target region completes (exact semantics based on tasks).
 \end{itemize}
 
 \vfill
@@ -420,7 +420,7 @@ end do
     map(tofrom: A), x)
     \end{minted}
 
-  \item Allocate data on the device without copying from the host. It is uninitalised.
+  \item Allocate data on the device without copying from the host. It is uninitialised.
       Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated to host too.
     \begin{minted}{fortran}
     map(alloc: A)
@@ -433,7 +433,7 @@ end do
 \begin{frame}[fragile]
 \frametitle{Enter/exit data constructs}
 \begin{itemize}
-  \item Often want to perform initial device data environment setup once, run through iteratative loop, copying back at end.
+  \item Often want to perform initial device data environment setup once, run through iterative loop, copying back at end.
   \item \textbf{Do not} want to copy the data every iteration! Very expensive.
   \item Use \mintinline{fortran}|target enter data| and \mintinline{fortran}|target exit data| constructs to control device data environment.
 \end{itemize}
