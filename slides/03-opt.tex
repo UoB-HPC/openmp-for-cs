@@ -201,6 +201,7 @@ end do
 \frametitle{Derived types}
 \begin{itemize}
   \item What do Fortran derived types look like in memory?
+  \item Organised as an array of structures.
   \item<2-> What happens when we vectorise?
 \end{itemize}
 
@@ -223,15 +224,36 @@ end do
 \end{tikzpicture}
 \end{adjustbox}
 
-\onslide<2->{
+\pause
 \begin{itemize}
   \item The \mintinline{fortran}|property1| values are gathered into a vector register.
   \item After the computation, the results are scattered back into memory.
   \item A cache line is 64 bytes, so only the first two values are on the first cache line.
   \item Must read two cache lines to fill the vector up.
 \end{itemize}
-}
-AoS vs SoA
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Structure of arrays}
+Switch type around to have an array per property.
+\begin{minted}[frame=single,linenos]{fortran}
+type grid
+  real(kind=8), allocatable :: property1(:,:)
+  real(kind=8), allocatable :: property2(:,:)
+  real(kind=8), allocatable :: property3(:,:)
+  real(kind=8), allocatable :: property4(:,:)
+end type
+
+do j = 1, ny
+  do i = 1, nx
+    grid%property1(i,j) = update_1()
+    grid%property2(i,j) = update_2()
+    grid%property3(i,j) = update_3()
+    grid%property4(i,j) = update_4()
+  end do
+end do
+\end{minted}
 \end{frame}
 
 %-------------------------------------------------------------------------------
