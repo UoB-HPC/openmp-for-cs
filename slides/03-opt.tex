@@ -14,19 +14,29 @@
 \frametitle{Outline}
 Now you know how to parallelise programs using OpenMP, how do you write fast programs in OpenMP?
 \begin{itemize}
+  \item The cache hierarchy
   \item Performance analysis
   \item Vectorisation
-  \item The cache hierarchy
+  \item Array of structures vs Structure of arrays
   \item Memory access patterns
+  \item Memory alignment
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{The cache hierarchy}
+\begin{frame}
+\frametitle{Cache hierarchy}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Performance analysis}
 \begin{frame}
 \frametitle{Roofline models}
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Vectorisation}
 \begin{frame}
 \frametitle{Vectorisation}
 $$C=A+B$$
@@ -91,6 +101,7 @@ Vector operations \\
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{OpenMP SIMD}
 \begin{frame}[fragile]
 \frametitle{OpenMP SIMD}
 \begin{itemize}
@@ -172,6 +183,7 @@ end function
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Derived types}
 \begin{frame}[fragile]
 \frametitle{Derived types}
 2D grid of cells; each cell containing 4 different values.
@@ -297,6 +309,7 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Memory access patterns}
 \begin{frame}[fragile]
 \frametitle{Memory access patterns}
 \begin{minted}{fortran}
@@ -408,15 +421,11 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Alignment}
 \begin{frame}
 \frametitle{Alignment}
 Align and tell compiler
 Issues with 2D
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Cache hierarchy}
 \end{frame}
 
 %-------------------------------------------------------------------------------
