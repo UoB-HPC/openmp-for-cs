@@ -258,6 +258,157 @@ end do
 
 %-------------------------------------------------------------------------------
 \begin{frame}
+\frametitle{Structure of arrays}
+\begin{itemize}
+  \item What happens when we vectorise?
+\end{itemize}
+
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (0,0) grid (13,1);
+  \foreach \i in {0,...,4} {
+    \draw (\i+.5,.5) node {P1};
+  }
+  \draw (5.5,.5) node {\dots};
+
+  \foreach \i in {5,...,9} {
+    \draw (\i+1.5,.5) node {P2};
+  }
+  \draw (11.5,.5) node {\dots};
+
+  \foreach \i in {10} {
+    \draw (\i+2.5,.5) node {P3};
+  }
+
+  \pause
+  \foreach \i in {0,...,3} {
+    \draw[->] (\i+.5,-1) -- (\i+.5,0);
+  }
+\end{tikzpicture}
+\end{adjustbox}
+
+\pause
+\begin{itemize}
+  \item Coalesced memory accesses are key for high performance code.
+  \item Adjacent vector lanes read adjacent memory locations.
+  \item A cache line is 64 bytes, so can fill the vector from a single cache line.
+  \item More efficient vectorisation.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Memory access patterns}
+\begin{minted}{fortran}
+do i = 1, N
+  val = A(i)
+end do
+\end{minted}
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (-3,0) grid (11,1);
+  \draw[dashed] (0,-.5) -- (0,1.5);
+  \draw[dashed] (8,-.5) -- (8,1.5);
+  \draw (0,-1) node {64 byte boundary};
+  \foreach \i in {0,...,7} {
+    \draw[->] (\i+.5,2) -- (\i+.5,1.2);
+  }
+\end{tikzpicture}
+\end{adjustbox}
+\begin{itemize}
+  \item Ideal memory access pattern.
+  \item All access is coalesced.
+  \item Vectors are aligned to cache line boundary.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Memory access patterns}
+\begin{minted}{fortran}
+do i = 1, N
+  val = A(i+3)
+end do
+\end{minted}
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (-3,0) grid (11,1);
+  \draw[dashed] (0,-.5) -- (0,1.5);
+  \draw[dashed] (8,-.5) -- (8,1.5);
+  \draw (0,-1) node {64 byte boundary};
+  \foreach \i in {0,...,7} {
+    \draw[->] (\i+.5,2) -- (3+\i+.5,1.2);
+  }
+\end{tikzpicture}
+\end{adjustbox}
+\begin{itemize}
+  \item OK memory access pattern.
+  \item All access is coalesced, but split across cache line.
+  \item Still get good use of cache lines, but not as efficient as aligned version.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Memory access patterns}
+\begin{minted}{fortran}
+do i = 1, N
+  val = A(j,i) % A(j+3*i)
+end do
+\end{minted}
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (-3,0) grid (11,1);
+  \draw[dashed] (0,-.5) -- (0,1.5);
+  \draw[dashed] (8,-.5) -- (8,1.5);
+  \draw (0,-1) node {64 byte boundary};
+  \foreach \i in {0,...,3} {
+    \draw[->] (\i+.5,2) -- (3*\i+.5,1.2);
+  }
+\end{tikzpicture}
+\end{adjustbox}
+\begin{itemize}
+  \item Strided access results in multiple memory transactions.
+  \item Kills throughput due to poor reuse of cached data.
+  \item Very easy to fall into this trap with multi-dimensional arrays.
+  \item Check your strides!
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Memory access patterns}
+\begin{minted}{fortran}
+do i = 1, N
+  val = A(B(i))
+end do
+\end{minted}
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (-3,0) grid (11,1);
+  \draw[dashed] (0,-.5) -- (0,1.5);
+  \draw[dashed] (8,-.5) -- (8,1.5);
+  \draw (0,-1) node {64 byte boundary};
+  \draw[->] (0.5,2) -- (-3.5,1.2);
+  \draw[->] (1.5,2) -- (3.5,1.2);
+  \draw[->] (2.5,2) -- (0.5,1.2);
+  \draw[->] (3.5,2) -- (8.5,1.2);
+  \draw[->] (4.5,2) -- (-1.5,1.2);
+  \draw[->] (5.5,2) -- (7.5,1.2);
+  \draw[->] (6.5,2) -- (1.5,1.2);
+  \draw[->] (7.5,2) -- (-2.5,1.2);
+\end{tikzpicture}
+\end{adjustbox}
+\begin{itemize}
+  \item Essentially random access to memory.
+  \item Little reuse of cache lines.
+  \item Unpredictable pattern, so hardware prefetchers won't work efficiently.
+  \item Very challenging!
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
 \frametitle{Alignment}
 Align and tell compiler
 Issues with 2D
@@ -266,11 +417,6 @@ Issues with 2D
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Cache hierarchy}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Memory access patterns}
 \end{frame}
 
 %-------------------------------------------------------------------------------
