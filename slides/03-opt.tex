@@ -493,6 +493,51 @@ Generally focus on the Intel compiler.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Branches}
+\begin{frame}
+\frametitle{Branches}
+\begin{itemize}
+  \item CPUs support speculative execution, GPUs tend not to.
+  \item Branch instructions have high latency.
+  \item GPUs hide this latency by fast context switching, CPUs by good branch predictors.
+  \item In both cases, divergent execution within the vector unit reduces performance.
+  \item Can use predication, selection and masking to convert conditional control flow into straight line code.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Removing branches}
+\begin{columns}
+
+\begin{column}{0.5\textwidth}
+Conditional execution
+\begin{itemize}
+  \item Only evaluate express if condition is met
+\end{itemize}
+\begin{minted}[frame=single]{fortran}
+if (a .gt. b) then
+  acc = acc + (a - b*c)
+end if
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+Selection and masking
+\begin{itemize}
+  \item Always evaluate expression and mask result
+\end{itemize}
+\begin{minted}[frame=single,breaklines]{fortran}
+temp = (a - b*c)
+mask = merge(1.0, 0.0, a .gt. b)
+acc = acc + (mask * temp)
+\end{minted}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{Exercise}
 \begin{frame}
 \frametitle{Exercise}
