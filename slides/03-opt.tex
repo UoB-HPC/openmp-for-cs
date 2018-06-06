@@ -424,8 +424,72 @@ end do
 \section{Alignment}
 \begin{frame}
 \frametitle{Alignment}
-Align and tell compiler
-Issues with 2D
+\begin{itemize}
+  \item If we can align arrays, we get better vectorisation; specifically load/stores are faster.
+  \item Taking advantage of alignment is a two stage process:
+    \begin{enumerate}
+      \item Align the memory on allocation.
+      \item Tell the compiler the access is aligned.
+    \end{enumerate}
+  \item Aligned allocations are (currently) unfortunately vendor specific.
+  \item OpenMP can help with telling the compiler the data is aligned.
+  \item Future OpenMP should have aligned allocators.
+\end{itemize}
+TODO: Issues with 2D
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Aligning allocations}
+Generally focus on the Intel compiler.
+\begin{itemize}
+  \item Align all allocations of arrays (not in derived types) with compiler flag: \mintinline{bash}|-align array64byte|
+  \item Use an Intel compiler directive on array definition:
+  \begin{minted}[frame=single]{fortran}
+  real(kind=8), allocatable :: A(:,:)
+  !dir$ attributes align:64 :: A
+  \end{minted}
+  \item Allocate memory in C, and convert to Fortran \mintinline{fortran}|pointer|:
+  \begin{minted}[frame=single,breaklines]{c}
+  double * alloc(int *len) {
+    return (double *)aligned_alloc(64, sizeof(double)*(*len));
+  }
+  \end{minted}
+  \begin{minted}[frame=single]{fortran}
+  real(kind=8), pointer :: A(:,:)
+  type(c_ptr) :: A_ptr
+  A_ptr = alloc(nx*ny)
+  call c_f_pointer(A_ptr, A, (/ nx, ny/))
+  \end{minted}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Telling the compiler about alignment}
+\begin{itemize}
+  \item Use OpenMP \mintinline{fortran}|simd aligned| clause:
+  \begin{minted}[frame=single,fontsize=\small]{fortran}
+  !$omp simd aligned(A:64)
+  do i = 1, nx
+    A(i,j) = A(i,j) + 1.0
+  end do
+  !$omp end simd
+  \end{minted}
+  \pause
+  \item Unfortunately often not sufficient.
+  \item Often need to use Intel specific directives to say loop extent is divisible by vector length.
+  \begin{minted}[frame=single,fontsize=\small]{fortran}
+  % 64 byte aligned / 8 byte data type means mod 8
+  !dir$ assume(mod(nx,8) .eq. 0)
+  !$omp simd aligned(A:64)
+  do i = 1, nx
+    A(i,j) = A(i,j) + 1.0
+  end do
+  !$omp end simd
+  \end{minted}
+  \item Check the compiler report for aligned and unaligned access.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
