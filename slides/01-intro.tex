@@ -71,7 +71,7 @@ A collection of compiler directives, library routines, and environment variables
   \item User-directed parallelization.
 \end{itemize}
 
-A \emph{specfication} of annotations you can make to your program in order to make it parallel.
+A \emph{specification} of annotations you can make to your program in order to make it parallel.
 
 \end{frame}
 
@@ -253,9 +253,9 @@ Threads are synchronised at the end of the parallel region.
 \begin{minted}[fontsize=\small, linenos, frame=single]{fortran}
 program hello
   use fpthread
-  intger :: i, err
+  integer :: i, err
   integer :: N = 4
-  type(fpthread_t) :: tid(N)
+  type(fpthread_t) :: Tide(N)
 
   do i = 1, N
     call fpthread_create(tid(i), NULL, run, NULL, err)
@@ -351,7 +351,7 @@ program vecadd
   real(kind=8), allocatable, dimension(:) :: A, B, C
   integer :: i         ! Loop counter
 
-  ! Allocate and initilise vectors
+  ! Allocate and initialise vectors
   allocate(A(N), B(N), C(N))
   A = 1.0; B = 2.0; C = 0.0
 
@@ -425,7 +425,7 @@ What's the problem here?
   end do
   !$omp end parallel
 \end{minted}
-Much more information about data sharing clausing in next session.
+Much more information about data sharing clauses in next session.
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -493,7 +493,7 @@ end do
   \item This starts a parallel region, forking some threads.
   \item Each thread then gets a portion of the iteration space and computes the loop body in parallel.
   \item Implicit synchronisation point at the \mintinline{fortran}|end do|.
-  \item Threads finally join again; later code executes sequentually.
+  \item Threads finally join again; later code executes sequentially.
 \end{itemize}
 \end{frame}
 
@@ -531,7 +531,7 @@ Next time: the rest of the OpenMP common core.
 \begin{frame}[fragile]
 \frametitle{The Schedule clause}
 \begin{itemize}
-  \item The worksharing clauses use default rules for assiging iterations to threads.
+  \item The worksharing clauses use default rules for assigning iterations to threads.
   \item Can use the \mintinline{fortran}|schedule| clause to specify the distribution.
   \item General format:
     \begin{minted}{fortran}
@@ -691,7 +691,7 @@ All $N^2$ iterations are shared between threads.
 \begin{frame}
 \frametitle{Nested loops}
 \begin{block}{Performance note}
-Collapsing loops may subtly effect the compilers knowledge about alignment and effect vectoriation.
+Collapsing loops may subtly effect the compilers knowledge about alignment and effect vectorisation.
 More on this when we talk about vectorisation in another session.
 \end{block}
 
