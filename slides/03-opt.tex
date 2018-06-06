@@ -3,7 +3,7 @@
 \input{preamble.tex}
 
 \title{OpenMP for Computational Scientists}
-\subtitle{3: Vectoristation and optimisations}
+\subtitle{3: Vectorisation and optimisations}
 
 \begin{document}
 
@@ -154,7 +154,7 @@ Useful conceptual tool to establish whether compute or memory bandwidth bound.
 \frametitle{Intel Advisor: Roofline}
 \begin{itemize}
   \item Can use Intel Advisor to run a Roofline analysis on your code.
-  \item First, it runs some microbenchmarks to generate the Roofline model.
+  \item First, it runs some micro-benchmarks to generate the Roofline model.
   \item Then, it runs your code, calculating the CI and performance.
   \item Can be helpful to visualise how performant your code is.
   \item More information: \url{https://software.intel.com/en-us/articles/intel-advisor-roofline}.
@@ -205,7 +205,7 @@ Vector operations \\
 \begin{itemize}
   \item Vectorisation gives you more compute per cycle.
   \item Hence increases the FLOPS/s rate of the processor.
-  \item Also results in fewer instructions to process (less presure on instruction decode units).
+  \item Also results in fewer instructions to process (less pressure on instruction decode units).
   \item Vectors help make good use of the memory hierarchy.
   \item Helps you write code which has good access patterns to maximise bandwidth.
 \end{itemize}
@@ -216,7 +216,7 @@ Vector operations \\
 \frametitle{Auto-vectorisation}
 \begin{itemize}
   \item Modern compilers are very good to automatically vectorising your loops.
-  \item Fortran helps as arrays do not alisas (overlap).
+  \item Fortran helps as arrays do not aliases (overlap).
   \item But compiler needs to be sure it's safe to vectorise.
   \item Read compiler reports to see if it's already vectorising.
     \begin{itemize}
@@ -287,7 +287,7 @@ end function
   end do
   !$omp end simd
   \end{minted}
-  \item \mintinline{fortran}|simdlen(4)|: prefered iterations to be performed concurrently as a vector.
+  \item \mintinline{fortran}|simdlen(4)|: preferred iterations to be performed concurrently as a vector.
 \end{itemize}
 \end{frame}
 
