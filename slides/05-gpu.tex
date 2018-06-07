@@ -221,7 +221,7 @@ Not using this combined statement can have severe performance issues.
 \begin{frame}[fragile]
 \frametitle{Execution model: distribute}
 \begin{itemize}
-  \item Share iterations of a loop between teams.
+  \item Distribute iterations of a loop across teams.
   \item Each team gets part of the iteration space.
   \item Change default assignment with \mintinline{fortran}|dist_schedule(static)| clause. Optionally include chunk size.
   \item Still only the master thread in the team executes them.
@@ -271,8 +271,8 @@ end do
 \frametitle{Execution model: parallel do}
 \begin{itemize}
   \item Same semantics as on the CPU!
-  \item Launches threads within the team and shares iterations between threads.
-  \item Note, iterations that were assigned to the team by \mintinline{fortran}|distribute| construct are shared between threads in the team.
+  \item Launches threads within the team and distributes iterations across those threads.
+  \item Note, iterations that were assigned to the team by the \mintinline{fortran}|distribute| construct are distributed across threads in the team.
   \item Can use the \mintinline{fortran}|schedule| clause too.
   \item Remember, can synchronise between threads in the team.
 \end{itemize}
@@ -407,7 +407,7 @@ end do
 
   \item On entering the region, copy from host to device:
     \begin{minted}{fortran}
-    map(to: A), x)
+    map(to: A, x)
     \end{minted}
 
   \item On exiting the region, copy from device to host. At start of region, these are uninitialised on the device.
@@ -417,11 +417,11 @@ end do
 
   \item Same as applying \mintinline{fortran}|map(to: ...)| and \mintinline{fortran}|map(from: ...)|
     \begin{minted}{fortran}
-    map(tofrom: A), x)
+    map(tofrom: A, x)
     \end{minted}
 
   \item Allocate data on the device without copying from the host. It is uninitialised.
-      Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated to host too.
+      Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated on host too.
     \begin{minted}{fortran}
     map(alloc: A)
     \end{minted}
@@ -441,7 +441,7 @@ end do
 \begin{minted}[frame=single,fontsize=\small]{fortran}
 !$omp target enter data map(to: A, B, C)
 
-do t = 1, 1000000
+do t = 1, N
   !$omp target
   ... ! Read A and B, write C
   !$omp end target
