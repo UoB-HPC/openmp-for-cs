@@ -1,0 +1,53 @@
+\documentclass{beamer}
+
+\input{preamble.tex}
+
+\title{OpenMP for Computational Scientists}
+\subtitle{6: Tasking and Tools}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Outline}
+\begin{itemize}
+  \item Poor mans tasking: sections
+  \item The single and master constructs
+  \item Tasking in OpenMP
+  \item Tools
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Tasking}
+\begin{itemize}
+  \item What if your code doesn't follow a standard parallel loop pattern?
+  \item OpenMP needs to know the loop count at runtime.
+  \item Recursive and tree/graph based algorithms inconvinient to program with parallel loops.
+  \item Tasking allows you to package work and data into units (tasks) and have them scheduled in parallel.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+p => head
+do while(associated(p))
+  call process(p)
+  p => p%next
+end do
+\end{minted}
+\end{frame}
+%-------------------------------------------------------------------------------
+\section{Sections}
+\begin{frame}
+\frametitle{Sections}
+\begin{itemize}
+  \item What if your work isn't 
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+
+\end{document}
+
