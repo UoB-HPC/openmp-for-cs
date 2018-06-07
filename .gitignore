@@ -18,6 +18,7 @@ stencil
 stencil_paralleldo
 stencil_numa
 stencil_target
+fibonacci
 
 # Misc.
 .*.swp
