@@ -22,7 +22,7 @@
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
-\frametitle{Tasking}
+\frametitle{The need for tasks}
 \begin{itemize}
   \item What if your code doesn't follow a standard parallel loop pattern?
   \item OpenMP needs to know the loop count at runtime.
@@ -40,13 +40,354 @@ end do
 \end{frame}
 %-------------------------------------------------------------------------------
 \section{Sections}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Sections}
 \begin{itemize}
-  \item What if your work isn't 
+  \item Sections give you a way to assign different work to different threads.
+  \item Useful for a producer/consumer pattern, but not really recursive algorithms.
+  \item If fewer sections than threads, threads sit idle.
+  \item If more sections than threads, sections assigned by implementation.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel sections
+    !$omp section
+    call work1()
+
+    !$omp section
+    call work2()
+
+!$omp end parallel sections
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Single and master}
+\begin{frame}[fragile]
+\frametitle{The single construct}
+\begin{itemize}
+  \item Often necessary for only one thread to do some work in a parallel region.
+  \item Wrapping code with the \mintinline{fortran}|single| constructs means only one thread in the parallel region will execute that code.
+  \item Not defined which thread will actually execute the block.
+  \item There is an implicit barrier for this construct (can avoid with \mintinline{fortran}|nowait| clause).
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel
+  call do_work()
+  !$omp single
+  call exchange_halos()
+  !$omp end single
+!$omp end parallel
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{The master construct}
+\begin{itemize}
+  \item Similar to \mintinline{fortran}|single| construct, except guarenteed the master thread will execute the block.
+  \item There is \emph{no} implicit barrier for this construct!
+  \item Useful for cases where synchronisation isn't required:
+    \begin{itemize}
+      \item Printing out messages to the screen.
+      \item Generating tasks!
+    \end{itemize}
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel
+  call do_work()
+  if (conv .eq. .true.)
+    !$omp master
+    print *, "Converged!"
+    !$omp end master
+    exit
+  end if
+!$omp end parallel
+\end{minted}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Tasks}
+\begin{frame}[fragile]
+\frametitle{Tasks}
+\begin{itemize}
+  \item OpenMP 3.0 introduced real tasking.
+  \item Later versions refined and added features.
+\end{itemize}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\small]{fortran}
+!$omp parallel
+  !$omp master
+    !$omp task
+    call do_task(x,y,z)
+    !$omp end task
+
+    !$omp task
+    call do_task(i,j,k)
+    !$omp end task
+  !$omp end master
+!$omp end parallel
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item Use master thread to generate tasks for all threads to do.
+  \item Idle threads take tasks off the task queue.
+  \item Barrier at the \mintinline{fortran}|end parallel| ensures all tasks complete.
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Trees}
+Useful to think about tasks organised as a tree (or graph).
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
+  \node (it) {Initial Task};
+  \node (t1) [below=of it, xshift=-1cm] {Task A} edge [<-] (it);
+  \node (t2) [below=of it, xshift=1cm] {Task B} edge [<-] (it);
+  \node (t3) [below=of t1, xshift=-1cm] {Task C} edge [<-] (t1);
+  \node (t4) [below=of t1, xshift=1cm] {Task D} edge [<-] (t1);
+
+\end{tikzpicture}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item The Initial Task is the \emph{parent} of Task A.
+  \item Task A is the \emph{child} of the Initial Task.
+  \item Task A and Task B are \emph{siblings}.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data sharing clauses}
+\begin{itemize}
+  \item Can use these three data sharing clauses from \mintinline{fortran}|parallel| regions on the \mintinline{fortran}|task| construct.
+  \item The defintions are really the same, but applied to tasks, not threads.
+  \item Need to think carefully about the appropriate clauses for each variable.
+  \item \mintinline{fortran}|shared(x)|: There is one copy of the \mintinline{fortran}|x| variable, shared between the current and child tasks.
+  \item \mintinline{fortran}|private(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is not initialised.
+  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initilised to the value of the original variable in the encountering task region.
 \end{itemize}
 \end{frame}
 
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Default data sharing}
+\begin{itemize}
+  \item Tasks and parallel regions have different default data sharing rules.
+  \item By default, data is \emph{shared} for \mintinline{fortran}|parallel| regions.
+  \item By default, data is \emph{firstprivate} for \mintinline{fortran}|task| constructs.
+  \item Unless, it's shared by the enclosing (the outer) region.
+  \item Using \mintinline{fortran}|default(none)| is recommended here especially.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Task completion}
+Two places where tasks synchronise:
+\begin{enumerate}
+  \item At thread barriers:
+    \begin{itemize}
+      \item Implicit barriers (like at end of \mintinline{fortran}|parallel| regions).
+      \item Explicit \mintinline{fortran}|barrier| constructs.
+    \end{itemize}
+  \item At the \mintinline{fortran}|taskwait| construct:
+    \begin{itemize}
+      \item Waits on all child tasks of the current task before continuing.
+      \item Only applies to tasks that the current task generated.
+      \item Everything in OpenMP is defined as task, so here the ``outer'' task is the one that called the first \mintinline{fortran}|task| construct.
+    \end{itemize}
+\end{enumerate}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Back to the tree}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
+  \node (it) {Initial Task};
+  \node (t1) [below=of it, xshift=-1cm] {Task A} edge [<-] (it);
+  \node (t2) [below=of it, xshift=1cm] {Task B} edge [<-] (it);
+  \node (t3) [below=of t1, xshift=-1cm] {Task C} edge [<-] (t1);
+  \node (t4) [below=of t1, xshift=1cm] {Task D} edge [<-] (t1);
+\end{tikzpicture}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item A \mintinline{fortran}|taskwait| in the Initial Task will wait for Task A and B to finish. Task A finishes when Tasks C and D are also finished.
+  \item A \mintinline{fortran}|taskwait| in Task A will wait for Tasks C and D to finish.
+  \item A \mintinline{fortran}|taskwait| in Task B will do nothing (no children).
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Fibonacci}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[breaklines,frame=single,linenos,fontsize=\small]{fortran}
+recursive integer function fib(n) result(res)
+  integer :: n, i, j
+  if (n .lt. 2) then
+    res = n
+  else
+    !$omp task shared(i)
+    i = fib(n-1)
+    !$omp end task
+    !$omp task shared(j)
+    j = fib(n-2)
+    !$omp end task
+    !$omp taskwait
+    res = i+j
+  end if
+end function
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item Routine called from a parallel region by one of the threads.
+  \item This first task \mintinline{fortran}|fib(40)| creates two tasks: \mintinline{fortran}|fib(39)| and \mintinline{fortran}|fib(38)|.
+  \item \mintinline{fortran}|i| and \mintinline{fortran}|j| must be \mintinline{fortran}|shared| so that the results are retained by the calling task.
+  \item The \mintinline{fortran}|taskwait| construct ensures that the child tasks are finished before summing their return values.
+\end{itemize}
+\end{column}
+
+\end{columns}
+NB: there are better ways to calculate Fibonacci numbers\dots
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Task dependencies}
+\begin{itemize}
+  \item OpenMP gives you the ability to define an ordering of tasks based on input and output data dependancies.
+  \item In other words, can make tasks wait for other sibling tasks to finish before starting.
+  \item Need to specify input and output dependencies.
+  \item Only checks for previously generated siblings with a dependency specified.
+  \item \mintinline{fortran}|depend(in: A)|: task depends on siblings with \mintinline{fortran}|out| or \mintinline{fortran}|inout| dependancy \mintinline{fortran}|A|.
+  \item \mintinline{fortran}|depend(out: A)|: task depends on siblings with any dependancy on \mintinline{fortran}|A|.
+  \item \mintinline{fortran}|depend(inout: A)|: same as \mintinline{fortran}|depend(out: A)|.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Dependency example}
+\begin{columns}
+\begin{column}{0.7\textwidth}
+\begin{minted}[frame=single,linenos,fontsize=\small]{fortran}
+!$omp task depend(out: x)
+x = 1.0
+!$omp end task
+
+!$omp task depend(in: x) depend(out: y)
+y = f(x)
+!$omp end task
+
+!$omp task depend(in: x) depend(out: z)
+z = g(x)
+!$omp end task
+
+!$omp task depend(in: y, z)
+print *, y+z
+!$omp end task
+\end{minted}
+\end{column}
+
+\begin{column}{0.3\textwidth}
+\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
+  \node (it) {$x = 1.0$};
+  \node (t1) [below=of it, xshift=-1cm] {$y=f(x)$} edge [<-] (it);
+  \node (t2) [below=of it, xshift=1cm] {$z=g(x)$} edge [<-] (it);
+  \node (t3) [below=of t2, xshift=-1cm] {$y+z$} edge [<-] (t1) edge (t2);
+\end{tikzpicture}
+\end{column}
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Dependency example}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[breaklines,frame=single,linenos,fontsize=\small]{fortran}
+!$omp task depend(out: x)
+x = 1.0
+!$omp end task
+
+!$omp task depend(in: x) depend(out: y)
+y = f(x)
+!$omp end task
+
+!$omp task depend(in: x) depend(out: z)
+z = g(x)
+!$omp end task
+
+!$omp task depend(in: y, z)
+print *, y+z
+!$omp end task
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{itemize}
+  \item Must specify first \mintinline{fortran}|out| dependency.
+  \item Then generate $y=f(x)$ tasks which depends on it.
+  \item Then generate $z=g(x)$ task, which depends on first but not second.
+  \item Generate task which depends on middle two tasks.
+  \item Note, OpenMP still sees all these tasks as \emph{siblings}.
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Clauses and things}
+untied, mergable, Priority, final, taskyield, taskloop
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Tasking advice}
+\begin{itemize}
+  \item Getting the correct data sharing clauses can be tricky.
+  \item Don't use tasks for patterns supported by other parts of OpenMP (parallel loops).
+  \item Tasking comes with overheads.
+  \item The runtime is good, but can't work miracles.
+  \item Best results obtained where use controls number and granularity of tasks.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Resources}
+\begin{itemize}
+  \item SC'16 Tutorial from Tim Mattson and Alice Koniges: \url{https://www.nersc.gov/assets/Uploads/SC16-Programming-Irregular-Applications-with-OpenMP.pdf}
+\end{itemize}
+\end{frame}
 %-------------------------------------------------------------------------------
 
 \end{document}
