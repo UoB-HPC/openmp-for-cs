@@ -65,7 +65,7 @@
   \item Allocating memory does not necessarily allocate memory!
   \item OS tends to use a \emph{first touch policy}.
   \item Memory is allowed when it's first used, a page at a time.
-  \item In a NUMA architecture, this means the first thread to touch the array causes creation of space in the memory closest to that core.
+  \item In a NUMA architecture, this means the first thread to touch the array causes creation of space in the memory closest to that thread (core).
 \end{itemize}
 \end{frame}
 
@@ -120,7 +120,7 @@ end do
   \item Exposed as \emph{places} and \emph{thread pinning policy} to those places.
   \item By default there is one place consisting of all the cores.
   \item Use the \mintinline{bash}|OMP_PROC_BIND| environment variable to set pinning for all \mintinline{fortran}|parallel| regions.
-  \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but advice against this.
+  \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but advise against this.
 \end{itemize}
 \end{frame}
 
@@ -159,7 +159,7 @@ end do
 \begin{itemize}
   \item In general, going to want to just use \mintinline{bash}|OMP_PROC_BIND=true|.
   \item Sometimes \mintinline{bash}|spread| or \mintinline{bash}|close| gets better performance.
-  \item Must effective with a NUMA-aware implementation.
+  \item Most effective with a NUMA-aware implementation.
   \item But must be careful with MPI+OpenMP pinning: more on this later\dots
 \end{itemize}
 \end{frame}
@@ -201,7 +201,7 @@ mpirun -np 16 ./a.out
 \begin{frame}[fragile]
 \frametitle{Compiling OpenMP and MPI code}
 \begin{itemize}
-  \item Remember building MPI code just uses a the wrapper commands.
+  \item Remember building MPI code just uses the wrapper commands.
   \item Just pass in the OpenMP flag as usual:
     \begin{itemize}
       \item GNU: \mintinline{bash}|mpif90| -fopenmp
@@ -298,7 +298,7 @@ Any thread can call MPI whenever it likes. The \mintinline{fortran}|MPI_THREAD_M
   \item Launch 64 MPI ranks: 1 per core.
     \begin{itemize}
       \item This is flat MPI.
-      \item Launching OpenMP threads will over allocate threads compared to hardware resource.
+      \item Launching OpenMP threads will over-allocate threads compared to hardware resource.
       \item Warning: things will slow down.
     \end{itemize}
   \item Launch 4 MPI ranks (one per socket).
