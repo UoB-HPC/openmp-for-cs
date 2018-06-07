@@ -86,7 +86,7 @@ A \emph{specification} of annotations you can make to your program in order to m
   These tell the compiler to insert some extra code on your behalf.
 
 \item Compiler directives usually apply to a \emph{structured block} of statements.
-Limited scoping in Fortran means often need \emph{end} directives.
+Limited scoping in Fortran means we often need to use \emph{end} directives.
   \begin{minted}{fortran}
   !$omp construct
   ... ! lines of Fortran code
@@ -174,9 +174,9 @@ A typical HPC node consisting of 2 multi-core CPUs.
 
 \end{tikzpicture}
 \end{center}
-\emph{All} threads (running on a core) access the same memory.
+\emph{All} threads (each running on a core) can access the same memory.
 
-Different to MPI, where processes cannot see memory of another without explicit communication.
+Different to MPI, where one process cannot see the memory of another without explicit communication.
 
 \end{frame}
 
@@ -278,8 +278,8 @@ end program hello
 \begin{itemize}
   \item Pthreads is very error prone and verbose.
   \item The OpenMP \mintinline{fortran}|!$omp parallel| abstracts this away.
-  \item The compiler directive inserts this extra code for your behalf.
-  \item Pthreads requires wrapping up my parallel work in subroutines.
+  \item The compiler directive inserts this extra code on your behalf.
+  \item Pthreads requires wrapping up your parallel work in subroutines.
     \begin{itemize}
       \item Kernels are a useful abstraction used in many programming models.
     \end{itemize}
@@ -290,7 +290,7 @@ end program hello
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Setting number of threads}
-Need to be able to set the number of threads to launch.
+You might need to set the number of threads to launch (though typically you'll leave OpenMP to set the number of threads for you at run-time).
 
 OpenMP has 3 ways to do this:
 \begin{itemize}
@@ -311,7 +311,7 @@ OpenMP has 3 ways to do this:
   \end{minted}
 \end{itemize}
 
-In general it's better to use environment variables to set this as gives you more flexibility at runtime.
+In general it's better to use environment variables if you need to do this, as this approach gives you more flexibility at runtime.
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -408,9 +408,9 @@ What's the problem here?
 
 \begin{itemize}
   \item In OpenMP, all variables are \emph{shared} between threads.
-  \item But each thread needs own copy of \mintinline{fortran}|tid|.
+  \item But each thread needs its own copy of \mintinline{fortran}|tid|.
   \item Solution: use the \mintinline{fortran}|private| clause on the \mintinline{fortran}|parallel| region.
-  \item This gives each thread it's own unique copy in memory for the variable.
+  \item This gives each thread its own unique copy in memory for the variable.
 \end{itemize}
 
 \begin{minted}[frame=single]{fortran}
@@ -431,7 +431,7 @@ Much more information about data sharing clauses in next session.
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Vector add: Step 3}
-Finally, share the iteration space between the threads.
+Finally, distribute the iteration space across the threads.
 \begin{minted}[frame=single]{fortran}
   integer :: tid, nthreads
 
@@ -460,7 +460,7 @@ Be careful with your index calculation.
 \item Common pattern of splitting loop iterations between threads.
 \item OpenMP has worksharing constructs to help with this.
 \item Used within a parallel region.
-\item Loop iterator is made \mintinline{fortran}|private| by default: no need for data sharing clause.
+\item The loop iterator is made \mintinline{fortran}|private| by default: no need for data sharing clause.
 \end{itemize}
 
 \begin{minted}[frame=single]{fortran}
@@ -512,7 +512,7 @@ The vector add codes are available in the repository for you to look at:
 \begin{frame}
 \frametitle{Taking stock}
 \begin{itemize}
-  \item Now seen how to parallelise a program using OpenMP.
+  \item We've seen how to parallelise a simple program using OpenMP.
   \item Shown the MPI-style SPMD approach for dividing work.
   \item OpenMP worksharing constructs make this easier.
 \end{itemize}
@@ -682,7 +682,7 @@ do i = 1, N
 end do
 !$omp end parallel do
 \end{minted}
-All $N^2$ iterations are shared between threads.
+All $N^2$ iterations are distributed across threads, rather than just the $N$ of the outer loop.
 
 \end{frame}
 
@@ -691,8 +691,8 @@ All $N^2$ iterations are shared between threads.
 \begin{frame}
 \frametitle{Nested loops}
 \begin{block}{Performance note}
-Collapsing loops may subtly effect the compilers knowledge about alignment and effect vectorisation.
-More on this when we talk about vectorisation in another session.
+Collapsing loops may subtly effect the compiler's knowledge about alignment and could affect vectorisation.
+More on this when we talk about vectorisation in a later session.
 \end{block}
 
 \end{frame}
@@ -837,7 +837,7 @@ First exercise: parallelise a simple 5-point stencil code using OpenMP.
 \end{tikzpicture}
 \end{center}
 
-Value in every cell is set to the average of it's neighbours.
+Value in every cell is set to the average of its neighbours.
 \end{frame}
 
 %-------------------------------------------------------------------------------
