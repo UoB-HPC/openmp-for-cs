@@ -98,8 +98,8 @@ Now you know how to parallelise programs using OpenMP, how do you write fast pro
     \end{itemize}
   \item Worth thinking about the bound for your own code.
   \item Arithmetic (integer and floating point) is very cheap $O(1)$ cycle.
-  \item Division, transcendentals, exponentials/logs are exceptions.
-  \item Load/store is 2--3 times slower if hit L1 cache (best case).
+  \item Division, transcendentals, exponentials/logs are relatively slow.
+  \item Load/store is 2--3 times slower than an arithmetic operation, even if it's an L1 cache hit (the best case).
   \item Consider the ratio of bytes moved vs. floating point operations.
 \end{itemize}
 \end{frame}
@@ -107,7 +107,7 @@ Now you know how to parallelise programs using OpenMP, how do you write fast pro
 \begin{frame}
 \frametitle{Computational intensity}
 \begin{itemize}
-  \item The radio of FLOPS to bytes moved is known as \emph{computational intensity}.
+  \item The radio of FLOPS to bytes moved is known as \emph{computational intensity}, or CI.
   \item Originally only DRAM traffic counted, but this causes problems.
   \item Bytes moved is best calculated from the kernel perspective.
   \item Take this example:
@@ -132,7 +132,7 @@ Useful conceptual tool to establish whether compute or memory bandwidth bound.
   \draw     (0,1)   -- (2,2.5);
   \draw     (2,2.5) -- (7,2.5);
   \node at (3.5,-0.5) {Computational intensity (FLOPS/byte)};
-  \node[rotate=90] at (-0.5,1.5) {FLOPS/s};
+  \node[rotate=90] at (-0.5,1.5) {FLOP/s};
   \node at (7.5,2.4) {$F(I)$};
   \node at (4,1) {A};
   \node at (0.75,1) {B};
@@ -141,7 +141,7 @@ Useful conceptual tool to establish whether compute or memory bandwidth bound.
 \end{center}
 
 \begin{itemize}
-  \item Runtime performance of kernel gives FLOP/s, analysis of bytes/flops gives CI.
+  \item Runtime performance of kernel gives FLOP/s, analysis of bytes/FLOPS gives CI.
   \item Kernel A is compute bound.
   \item Kernel B is memory bandwidth bound.
   \item Both kernels require optimisation!
@@ -204,9 +204,9 @@ Vector operations \\
 \frametitle{Why vectorise?}
 \begin{itemize}
   \item Vectorisation gives you more compute per cycle.
-  \item Hence increases the FLOPS/s rate of the processor.
+  \item Hence may increase the FLOP/s rate of the processor.
   \item Also results in fewer instructions to process (less pressure on instruction decode units).
-  \item Vectors help make good use of the memory hierarchy.
+  \item Vectors help make good use of the memory hierarchy (often the main benefit).
   \item Helps you write code which has good access patterns to maximise bandwidth.
 \end{itemize}
 \end{frame}
@@ -215,8 +215,8 @@ Vector operations \\
 \begin{frame}
 \frametitle{Auto-vectorisation}
 \begin{itemize}
-  \item Modern compilers are very good to automatically vectorising your loops.
-  \item Fortran helps as arrays do not aliases (overlap).
+  \item Modern compilers are very good at automatically vectorising your loops.
+  \item Fortran helps as arrays can not aliase (overlap), unlike C.
   \item But compiler needs to be sure it's safe to vectorise.
   \item Read compiler reports to see if it's already vectorising.
     \begin{itemize}
@@ -313,7 +313,7 @@ end function
 \section{Derived types}
 \begin{frame}[fragile]
 \frametitle{Derived types}
-2D grid of cells; each cell containing 4 different values.
+2D grid of cells, each cell containing 4 different values.
 \begin{minted}[frame=single,linenos,fontsize=\small]{fortran}
 type cell
   real(kind=8) :: property1
@@ -483,7 +483,7 @@ end do
 \end{adjustbox}
 \begin{itemize}
   \item OK memory access pattern.
-  \item All access is coalesced, but split across cache line.
+  \item All access is coalesced, but split across cache lines.
   \item Still get good use of cache lines, but not as efficient as aligned version.
 \end{itemize}
 \end{frame}
@@ -640,7 +640,7 @@ Generally focus on the Intel compiler.
 \begin{column}{0.5\textwidth}
 Conditional execution
 \begin{itemize}
-  \item Only evaluate express if condition is met
+  \item Only evaluate expression if condition is met
 \end{itemize}
 \begin{minted}[frame=single]{fortran}
 if (a .gt. b) then
