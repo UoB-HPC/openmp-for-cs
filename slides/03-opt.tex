@@ -222,6 +222,8 @@ Vector operations \\
     \begin{itemize}
       \item Intel: \mintinline{bash}|-qopt-report=5|
       \item Cray: \mintinline{bash}|-hlist=a|
+      \item GNU (old): \mintinline{bash}|-ftree-vectorizer-verbose=2|
+      \item GNU (new): \mintinline{bash}|-fopt-info-vec|
     \end{itemize}
   \item Often memory access pattern which prevents (efficient) auto-vectorisation.
 \end{itemize}
@@ -288,6 +290,7 @@ end function
   !$omp end simd
   \end{minted}
   \item \mintinline{fortran}|simdlen(4)|: preferred iterations to be performed concurrently as a vector.
+  Specifying explicit vector lengths builds in obsolescence to the code as hardware vector lenghts continually change --- don't recommend using this clause.
 \end{itemize}
 \end{frame}
 
@@ -569,20 +572,21 @@ TODO: Issues with 2D
 \begin{frame}[fragile]
 \frametitle{Aligning allocations}
 Generally focus on the Intel compiler.
+Only need to use one of these methods, whichever is most convenient.
 \begin{itemize}
   \item Align all allocations of arrays (not in derived types) with compiler flag: \mintinline{bash}|-align array64byte|
   \item Use an Intel compiler directive on array definition:
-  \begin{minted}[frame=single]{fortran}
+  \begin{minted}[frame=single,fontsize=\small]{fortran}
   real(kind=8), allocatable :: A(:,:)
   !dir$ attributes align:64 :: A
   \end{minted}
   \item Allocate memory in C, and convert to Fortran \mintinline{fortran}|pointer|:
-  \begin{minted}[frame=single,breaklines]{c}
+  \begin{minted}[frame=single,breaklines,fontsize=\small]{c}
   double * alloc(int *len) {
     return (double *)aligned_alloc(64, sizeof(double)*(*len));
   }
   \end{minted}
-  \begin{minted}[frame=single]{fortran}
+  \begin{minted}[frame=single,fontsize=\small]{fortran}
   real(kind=8), pointer :: A(:,:)
   type(c_ptr) :: A_ptr
   A_ptr = alloc(nx*ny)
