@@ -439,6 +439,18 @@ This code is susceptible to \emph{false sharing}.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Flush}
+\begin{itemize}
+  \item The \mintinline{fortran}|flush()| construct ensures that the variables are consistent between the thread's memory and main memory.
+  \item Don't want to go into complicated parts of the OpenMP memory model.
+  \item In general, don't need to worry about this stuff.
+  \item Without the flush, the write to memory will be lowered to after the loop, so false sharing only occurs once at the end.
+  \item Here we use it to \emph{ensure} that false sharing occurs every time to highlight the performance hit.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Firstprivate pi}
 Can use data sharing clauses to our advantage here:
