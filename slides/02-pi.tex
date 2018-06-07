@@ -28,7 +28,7 @@
 \section{Data sharing}
 \begin{frame}
 \frametitle{Data sharing}
-Remember: OpenMP is a \emph{shared} programming model.
+Remember: OpenMP is a \emph{shared memory} programming model.
 \begin{itemize}
   \item By default, all data is available to all threads.
   \item There is a single copy of \emph{shared} data.
@@ -60,7 +60,7 @@ Fortran variables being declared at the top of the routine mean you must think a
 
 \begin{alertblock}{Caution}
 Setting a data sharing clause on a heap variable only effects the metadata of the variable.
-The pointer could be private, but the target will be shared.
+The pointer could be private, but the target will still be shared.
 \end{alertblock}
 \end{frame}
 
@@ -89,7 +89,7 @@ TODO: just common blocks? copyin directive.
 \begin{frame}[fragile]
 \frametitle{Private example}
 Simple \mintinline{fortran}|do| loop, which just sets a variable to the iteration number.
-Each iteration prints out the current, and next value of \mintinline{fortran}|x|, along with the thread number.
+Each iteration prints out the current and next value of \mintinline{fortran}|x|, along with the thread number.
 Will see what happens with different data sharing clauses.
 
 \begin{minted}[linenos,breaklines,frame=single]{fortran}
@@ -180,7 +180,7 @@ In C, local scoping rules makes this easier.
 \end{alertblock}
 
 \begin{itemize}
-  \item You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute.
+  \item You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute. This is good practise.
   \item You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|default(firstprivate)| to make everything private by default --- this might save a lot of typing in an old code with many temporary variables.
 \end{itemize}
 
@@ -367,7 +367,7 @@ Full implementation: \mintinline{bash}|pi_atomic.f90|.
 
 Make \mintinline{fortran}|sum| an array of length equal to the number of threads.
 \begin{itemize}
-  \item Each thread stores its partial sum, and the array is totally by the master thread serially at the end.
+  \item Each thread stores its partial sum, and the array is totalled by the master thread serially at the end.
   \item As it's \emph{shared memory}, the \mintinline{fortran}|sum| array can be read just fine on the master rank.
 \end{itemize}
 \end{frame}
