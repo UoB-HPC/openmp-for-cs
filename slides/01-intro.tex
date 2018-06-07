@@ -660,6 +660,12 @@ schedule(runtime)
   \item Get the schedule from the \mintinline{bash}|OMP_SCHEDULE| environment variable.
 \end{itemize}
 
+\begin{block}{Recommendation}
+Just use a \mintinline{fortran}|static| schedule unless there is a good reason not to!
+\mintinline{fortran}|static| is usually the fastest of all the options.
+The choice of schedules is an advanced tuning option.
+\end{block}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -784,7 +790,7 @@ B(tid) = big_work2(A, tid)
 \begin{frame}[fragile]
 \frametitle{Nested threads}
 \begin{itemize}
-  \item Turn on support with \mintinline{fortran}|OMP_NESTED=true|, otherwise inner region is default serial.
+  \item Turn on support with by setting the environment variable \mintinline{fortran}|OMP_NESTED=true|, otherwise inner region is default serial.
   \item Every thread in the (outer) parallel region then spawns threads.
   \item Control the number of threads with clauses or environment variable: \mintinline{bash}|OMP_NUM_THREADS=4,2|.
 \end{itemize}
@@ -798,8 +804,17 @@ B(tid) = big_work2(A, tid)
 !$omp end parallel
 \end{minted}
 
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Nested threads}
 \begin{alertblock}{Warning!}
-Be careful how you use this. It's very easy to oversubscribe threads. Thread affinity can be tricky.
+Be careful how you use nesting threads.
+It's very easy to oversubscribe threads.
+Thread affinity can be tricky.
+You probably don't need to use nested threads!
 \end{alertblock}
 \end{frame}
 
@@ -808,13 +823,13 @@ Be careful how you use this. It's very easy to oversubscribe threads. Thread aff
 \frametitle{Multi-line directives}
 \begin{itemize}
   \item Sometimes OpenMP directives can be quite long.
-  \item Nicer to split up the directive across lines in the source file.
+  \item Nicer to split up the directive across lines in the source file using line continuation character \mintinline{fortran}|&|:
 \end{itemize}
 
 \begin{minted}{fortran}
 !$omp construct &
 !$omp& clause
-!$omp$ clause
+!$omp& clause
 \end{minted}
 
 \end{frame}
