@@ -26,7 +26,7 @@
 \begin{itemize}
   \item What if your code doesn't follow a standard parallel loop pattern?
   \item OpenMP needs to know the loop count at runtime.
-  \item Recursive and tree/graph based algorithms inconvinient to program with parallel loops.
+  \item Recursive and tree/graph based algorithms inconvenient to program with parallel loops.
   \item Tasking allows you to package work and data into units (tasks) and have them scheduled in parallel.
 \end{itemize}
 
@@ -86,7 +86,7 @@ end do
 \begin{frame}[fragile]
 \frametitle{The master construct}
 \begin{itemize}
-  \item Similar to \mintinline{fortran}|single| construct, except guarenteed the master thread will execute the block.
+  \item Similar to \mintinline{fortran}|single| construct, except guaranteed the master thread will execute the block.
   \item There is \emph{no} implicit barrier for this construct!
   \item Useful for cases where synchronisation isn't required:
     \begin{itemize}
@@ -178,11 +178,11 @@ Useful to think about tasks organised as a tree (or graph).
 \frametitle{Data sharing clauses}
 \begin{itemize}
   \item Can use these three data sharing clauses from \mintinline{fortran}|parallel| regions on the \mintinline{fortran}|task| construct.
-  \item The defintions are really the same, but applied to tasks, not threads.
+  \item The definitions are really the same, but applied to tasks, not threads.
   \item Need to think carefully about the appropriate clauses for each variable.
   \item \mintinline{fortran}|shared(x)|: There is one copy of the \mintinline{fortran}|x| variable, shared between the current and child tasks.
   \item \mintinline{fortran}|private(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is not initialised.
-  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initilised to the value of the original variable in the encountering task region.
+  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initialised to the value of the original variable in the encountering task region.
 \end{itemize}
 \end{frame}
 
@@ -327,12 +327,12 @@ NB: there are better ways to calculate Fibonacci numbers\dots
 \begin{frame}
 \frametitle{Task dependencies}
 \begin{itemize}
-  \item OpenMP gives you the ability to define an ordering of tasks based on input and output data dependancies.
+  \item OpenMP gives you the ability to define an ordering of tasks based on input and output data dependencies.
   \item In other words, can make tasks wait for other sibling tasks to finish before starting.
   \item Need to specify input and output dependencies.
   \item Only checks for previously generated siblings with a dependency specified.
-  \item \mintinline{fortran}|depend(in: A)|: task depends on siblings with \mintinline{fortran}|out| or \mintinline{fortran}|inout| dependancy \mintinline{fortran}|A|.
-  \item \mintinline{fortran}|depend(out: A)|: task depends on siblings with any dependancy on \mintinline{fortran}|A|.
+  \item \mintinline{fortran}|depend(in: A)|: task depends on siblings with \mintinline{fortran}|out| or \mintinline{fortran}|inout| dependency \mintinline{fortran}|A|.
+  \item \mintinline{fortran}|depend(out: A)|: task depends on siblings with any dependency on \mintinline{fortran}|A|.
   \item \mintinline{fortran}|depend(inout: A)|: same as \mintinline{fortran}|depend(out: A)|.
 \end{itemize}
 \end{frame}
