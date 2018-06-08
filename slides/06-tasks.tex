@@ -407,9 +407,50 @@ print *, y+z
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-taskyield, taskloop
+\frametitle{taskyield}
+\begin{itemize}
+  \item Once a task starts executing, it goes to completion unless it encounters a \emph{task scheduling point}.
+  \item At these points, the threads can pick another task to start executing or resume a task.
+  \item These points occur when you:
+    \begin{itemize}
+      \item Generate a task
+      \item Finish a task
+      \item Reach the end of a \mintinline{fortran}|taskgroup| construct.
+      \item Synchronise with \mintinline{fortran}|barrier| or \mintinline{fortran}|taskwait|.
+      \item And, at a \mintinline{fortran}|taskyield| construct.
+    \end{itemize}
+   \item The \mintinline{fortran}|taskyield| construct allows tasks to be suspended so another task can start.
+   \item Really useful when polling for a lock, otherwise the task never ``sleeps''.
+\end{itemize}
 \end{frame}
 
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{taskyield}
+\begin{minted}[linenos,frame=single,breaklines]{fortran}
+!$omp task
+  call do_something()
+
+  ! Wait for the lock
+  do while (.not. omp_test_lock(lock))
+    ! Couldn't get lock, so suspend task and schedule another
+    !$omp taskyield
+  end do
+
+  ! Only one task should call this function
+  call critical_code()
+
+  ! Release the lock
+  call omp_unset_lock(lock)
+!$omp end task
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+taskloop
+\end{frame}
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Other clauses}
