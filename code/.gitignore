@@ -1,0 +1,21 @@
+# Build output
+*.o
+*.mod
+
+# Binary names
+pi
+pi_array
+pi_atomic
+pi_critical
+pi_private
+pi_reduction
+private
+jacobi
+vadd
+vadd_paralleldo
+vadd_spmd
+stencil
+stencil_paralleldo
+stencil_numa
+stencil_target
+fibonacci
