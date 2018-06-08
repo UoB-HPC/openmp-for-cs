@@ -200,7 +200,7 @@ Useful to think about tasks organised as a tree (or graph).
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Task completion}
-Two places where tasks synchronise:
+Three places where tasks synchronise:
 \begin{enumerate}
   \item At thread barriers:
     \begin{itemize}
@@ -213,12 +213,17 @@ Two places where tasks synchronise:
       \item Only applies to tasks that the current task generated.
       \item Everything in OpenMP is defined as task, so here the ``outer'' task is the one that called the first \mintinline{fortran}|task| construct.
     \end{itemize}
+  \item At the end of the \mintinline{fortran}|taskgroup| construct:
+    \begin{itemize}
+      \item Waits on all child tasks generated within the \mintinline{fortran}|taskgroup| region.
+      \item Like \mintinline{fortran}|taskwait|, but allows grouping of child tasks.
+    \end{itemize}
 \end{enumerate}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Back to the tree}
+\frametitle{Taskwait: back to the tree}
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
@@ -239,6 +244,42 @@ Two places where tasks synchronise:
 \end{itemize}
 \end{column}
 \end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Taskgroup}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{minted}[frame=single,linenos]{fortran}
+!$omp parallel
+!$omp master
+  !$omp task
+  call background_task()
+  !$omp end task
+
+  !$omp taskgroup
+    !$omp task
+    call recursive_task()
+    !$omp end task
+  !$omp end taskgroup
+
+!$omp end master
+!$omp end parallel
+\end{minted}
+\end{column}
+
+\begin{column}{.5\textwidth}
+\begin{itemize}
+  \item Start a background task.
+  \item The \mintinline{fortran}|recursive_task()| will generate many more tasks.
+  \item All these tasks are children of the master task.
+  \item A \mintinline{fortran}|taskwait| on line 11 would wait for \emph{all the tasks}, including the background task.
+  \item The \mintinline{fortran}|taskgroup| waits for all the tasks in the group only, not including the background task.
+\end{itemize}
+\end{column}
+\end{columns}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
