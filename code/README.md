@@ -5,14 +5,14 @@ This project contains a number of OpenMP examples.
 A Fortran timing module (itself an interface to a C time call) is also provided as a utility to aid in getting wall clock time for serial Fortran programs.
 
 ## Contents
-- [Compiling the code](#Compiling-the-code)
-- [Vector addition](#Vector-addition)
+- [Compiling the code](#compiling-the-code)
+- [Vector addition](#vector-addition)
 - [5-point stencil](#5-point-stencil)
-- [Pi](#Pi)
-- [Private](#Private)
-- [Fibonacci](#Fibonacci)
-- [Jacobi](#Jacobi)
-- [Utility timing routines](#Utility-timing-routines)
+- [Pi](#pi)
+- [Private](#private)
+- [Fibonacci](#fibonacci)
+- [Jacobi](#jacobi)
+- [Utility timing routines](#utility-timing-routines)
 
 ## Compiling the code
 The provided `Makefile` will build all of the provided code.
