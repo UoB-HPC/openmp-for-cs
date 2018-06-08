@@ -434,9 +434,81 @@ Some rare clauses you can use when generating tasks, but unlikely to use them in
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Tools}
+\begin{frame}
+\frametitle{Tools}
+Intel Parallel Studio XE
+\begin{itemize}
+  \item Intel Advisor
+    \begin{itemize}
+      \item Shows vectorisation efficiency and Roofline analysis.
+      \item Can show you where might be good to thread, but obviously can't refactor your code for you to make it parallelisable.
+    \end{itemize}
+
+  \item Intel Inspector
+    \begin{itemize}
+      \item Debugger for memory errors and thread errors (such as deadlock).
+    \end{itemize}
+
+  \item Intel vTune Amplifier
+    \begin{itemize}
+      \item Performance tuning using hardware counters and metrics.
+      \item Very detailed information presented, but tries to summarise it.
+    \end{itemize}
+
+  \item The documentation on the Intel website is really helpful.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Tools}
+ARM HPC Tools
+\begin{itemize}
+  \item From ARM, but cross-platform. Used to be the Allinea Forge tools.
+  \item DDT: Graphical debugger. Really good for parallel programs in MPI and OpenMP (and both).
+  \item Map: Simple to use profiler. Can show thread activity, synchronisation and communication overheads.
+  \item \url{https://www.arm.com/products/development-tools/hpc-tools/cross-platform/forge}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Tools}
+Cray PerfTools
+\begin{itemize}
+  \item CrayPat
+    \begin{itemize}
+      \item Performance analysis tool for Cray systems.
+      \item Gives overview of expensive routines and communication and synchronisation costs.
+      \item Also uses hardware counters for more details information.
+    \end{itemize}
+  \item Reveal
+    \begin{itemize}
+      \item Analyses loop dependencies and uses performance data to automatically try to insert OpenMP constructs.
+      \item Doesn't do a complete job, still need to check the constructs are correct.
+      \item Obviously can't refactor a loop to make is parallelisable.
+      \item \url{http://www.nersc.gov/users/software/performance-and-debugging-tools/craypat/reveal/}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Tools}
+\begin{itemize}
+  \item Can use the NVIDIA debuggers and profilers for OpenMP \mintinline{fortran}|target| constructs.
+  \item Extrae and Paraver profiler and visualiser from Barcelona Supercomputing Center: \url{https://tools.bsc.es}.
+  \item Score-P and Vampir: good for generating timelines of multi-threaded/process code: \url{https://www.alcf.anl.gov/files/Vampir.pdf}
+  \item TAU profiler and program tracer: \url{https://www.cs.uoregon.edu/research/tau/tau.ppt}
+  \item TotalView debugger: \url{https://computing.llnl.gov/tutorials/totalview/}
+\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------
 \section{Exercise}
 \begin{frame}
-\frametitle{LU factorisation}
+\frametitle{Exercise}
+LU factorisation
 \end{frame}
 
 %-------------------------------------------------------------------------------
