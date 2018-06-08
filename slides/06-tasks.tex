@@ -173,6 +173,7 @@ Useful to think about tasks organised as a tree (or graph).
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Data sharing clauses}
 \begin{frame}
 \frametitle{Data sharing clauses}
 \begin{itemize}
@@ -198,6 +199,7 @@ Useful to think about tasks organised as a tree (or graph).
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Task synchronisation}
 \begin{frame}
 \frametitle{Task completion}
 Three places where tasks synchronise:
@@ -283,6 +285,7 @@ Three places where tasks synchronise:
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Fibonacci example}
 \begin{frame}[fragile]
 \frametitle{Fibonacci}
 \begin{columns}
@@ -320,6 +323,7 @@ NB: there are better ways to calculate Fibonacci numbers\dots
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Dependencies}
 \begin{frame}
 \frametitle{Task dependencies}
 \begin{itemize}
@@ -406,8 +410,9 @@ print *, y+z
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\subsection{Suspending tasks}
 \begin{frame}
-\frametitle{taskyield}
+\frametitle{Suspending tasks with taskyield}
 \begin{itemize}
   \item Once a task starts executing, it goes to completion unless it encounters a \emph{task scheduling point}.
   \item At these points, the threads can pick another task to start executing or resume a task.
@@ -426,7 +431,7 @@ print *, y+z
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
-\frametitle{taskyield}
+\frametitle{taskyield example}
 \begin{minted}[linenos,frame=single,breaklines]{fortran}
 !$omp task
   call do_something()
@@ -448,10 +453,29 @@ print *, y+z
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-taskloop
+\subsection{Generating lots of tasks}
+\begin{frame}[fragile]
+\frametitle{The taskloop construct}
+
+\begin{itemize}
+  \item Generates a task for each loop iteration.
+  \item Tasks form part of a \mintinline{fortran}|taskgroup|, unless use the \mintinline{fortran}|nogroup| clause.
+  \item \mintinline{fortran}|grainsize(num)| clause: sets the minimum number of iterations for each generated task.
+  \item \mintinline{fortran}|num_tasks(num)| clause: set number of tasks to create. Unlikely to want to specify this in practice.
+  \item \mintinline{fortran}|collapse| clause can also be used.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp taskloop
+do i = 1, N
+  call do_work(i)
+end do
+!$omp end taskloop
+\end{minted}
+
 \end{frame}
 %-------------------------------------------------------------------------------
+\subsection{Summary}
 \begin{frame}
 \frametitle{Other clauses}
 Some rare clauses you can use when generating tasks, but unlikely to use them in most cases.
