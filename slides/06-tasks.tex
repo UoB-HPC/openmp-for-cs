@@ -407,8 +407,19 @@ print *, y+z
 
 %-------------------------------------------------------------------------------
 \begin{frame}
-\frametitle{Clauses and things}
-untied, mergable, Priority, final, taskyield, taskloop
+taskyield, taskloop
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Other clauses}
+Some rare clauses you can use when generating tasks, but unlikely to use them in most cases.
+\begin{itemize}
+  \item \mintinline{fortran}|untied|: If the task gets suspended, any thread can start it. Without this clause, the thread which started the task must resume it.
+  \item \mintinline{fortran}|mergeable|: The task can be merged into the parent task, sharing its data environment. Execution might happen straight away, or be delayed.
+  \item \mintinline{fortran}|priority(n)|: The task is given a priority value $n \ge 0$. Gives a hint to the runtime about which tasks to run first.
+  \item \mintinline{fortran}|final(expr)|: If the expression is true, this and all further child tasks are included in the parent task, and just executed immediately. Useful for specifying a minimum tasks size in recursive algorithms.
+\end{itemize}
 \end{frame}
 %-------------------------------------------------------------------------------
 \begin{frame}
