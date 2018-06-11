@@ -19,18 +19,16 @@ program stencil
   allocate(Atmp(0:nx+1,0:ny+1))
 
   ! Initialise data to zero
-  !$omp parallel do collapse(2)
-  do j = 0, ny+1
-    do i = 0, nx+1
+  do i = 0, nx+1
+    do j = 0, ny+1
       A(i,j) = 0.0_8
       Atmp(i,j) = 0.0_8
     end do
   end do
-  !$omp end parallel do
 
   ! Insert values in centre of grid
-  do j = ny/4, 3*ny/4
-    do i = nx/4, 3*nx/4
+  do i = nx/4, 3*nx/4
+    do j = ny/4, 3*ny/4
       A(i,j) = 1.0_8
     end do
   end do
@@ -46,9 +44,9 @@ program stencil
     ! Update the stencil
     total = 0.0_8
     !$omp parallel do collapse(2) reduction(+:total)
-    do j = 1, ny
-      do i = 1, nx
-        Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) * 0.2_8
+    do i = 1, nx
+      do j = 1, ny
+        Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0_8
         total = total + Atmp(i,j)
       end do
     end do
