@@ -565,7 +565,6 @@ end do
   \item OpenMP can help with telling the compiler the data is aligned.
   \item Future OpenMP should have aligned allocators.
 \end{itemize}
-TODO: Issues with 2D
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -623,6 +622,40 @@ Only need to use one of these methods, whichever is most convenient.
 \end{itemize}
 \end{frame}
 
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Aligning 2D arrays}
+\begin{itemize}
+  \item Aligning the memory only aligns the first entry.
+  \item Multiples of the alignment factor will also be aligned.
+  \item With 2D arrays you need to double check that access can be aligned.
+  \item Example: 10-by-10 grid of FP64 numbers, aligned to 64 byte cache line:
+\end{itemize}
+
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \draw[step=1cm] (0,0) grid (17,1);
+  \foreach \i in {0,8,16} {
+    \draw[dashed] (\i,-.5) -- (\i,1.5);
+  }
+  \foreach \i in {1,...,10} {
+    \draw (\i-0.5, 0.5) node {(\i,1)};
+  }
+  \foreach \i in {1,...,7} {
+    \draw (10+\i-0.5, 0.5) node {(\i,2)};
+  }
+\end{tikzpicture}
+\end{adjustbox}
+
+\begin{itemize}
+  \item The array is aligned to a 64-byte cache line.
+  \item Accessing the vector \mintinline{fortran}|A(1:4,1)| is aligned.
+  \item Accessing the vector \mintinline{fortran}|A(1:4,2)| is \emph{not} aligned.
+  \item Need the inner stride to be a multiple of the alignment, and need to tell the compiler this is true (previous slide).
+  \item Solution: pad the array, but beware of memory footprint.
+\end{itemize}
+
+\end{frame}
 %-------------------------------------------------------------------------------
 \section{Branches}
 \begin{frame}
