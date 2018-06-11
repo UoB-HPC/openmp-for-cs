@@ -594,7 +594,18 @@ Use the \mintinline{fortran}|reduction| clause for reductions.
 \section{Exercise}
 \begin{frame}
 \frametitle{Exercise}
-Jacobi? Or implement the reduction in the stencil code?
+\begin{itemize}
+  \item Start with your parallel 5-point stencil code from last time.
+  \item Change the code to print out the total of the cells (excluding halo) every timestep.
+  \item You'll need to implement a parallel reduction to do this.
+  \item Try the different techniques shown to implement reductions:
+    \begin{itemize}
+      \item Critical sections.
+      \item Atomics.
+      \item Reduction clause.
+    \end{itemize}
+  \item Extension: there is also a Jacobi code to parallelise --- it needs a reduction too.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
