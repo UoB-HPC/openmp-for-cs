@@ -79,9 +79,19 @@ The pointer could be private, but the target will still be shared.
     Each thread gets its own \mintinline{fortran}|x| variable, and the original variable is updated from the last iteration.
 \end{itemize}
 
+These are the most common clauses that are needed.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data clauses}
 There is also the \mintinline{fortran}|threadprivate(x)| directive.
-This says to take a copy of the data in \emph{thread local storage} which is persistent across parallel regions.
-TODO: just common blocks? copyin directive.
+\begin{itemize}
+  \item This says to take a copy of the data in \emph{thread local storage} which is persistent across parallel regions.
+  \item The \mintinline{fortran}|copyin| directive is a means to initilise \mintinline{fortran}|threadprivate| data, copying from the master thread.
+\end{itemize}
+
+Unlike to use this clause.
 \end{frame}
 
 %-------------------------------------------------------------------------------
