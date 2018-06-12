@@ -1,5 +1,6 @@
 
 FTN=gfortran
+CC=gcc
 FFLAGS=-Wall -O3
 LIBS=-fopenmp
 
