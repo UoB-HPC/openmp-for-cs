@@ -173,6 +173,40 @@ Useful to think about tasks organised as a tree (or graph).
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Under the hood}
+\begin{itemize}
+  \item It's useful to think about how the OpenMP runtime itself implements tasking.
+  \item In general, the runtime maintains a queue of tasks.
+  \item Threads enqueue and dequeue tasks from the queue.
+\end{itemize}
+
+\begin{center}
+\begin{adjustbox}{max width={\textwidth}}
+\begin{tikzpicture}
+  \foreach \i in {0,...,3} {
+    \draw (\i,0) rectangle (\i+.6,2);
+  }
+  \draw (3.3,2.3) node {Front};
+  \draw (0.3,2.3) node {Back};
+
+  \draw[->] (3.6,1) parabola (5.6,0);
+  \draw (5.5,1) node {Dequeue};
+
+  \draw[->] (-2,2) parabola (0,1);
+  \draw (-1,1) node {Enqueue};
+\end{tikzpicture}
+\end{adjustbox}
+\end{center}
+
+\begin{itemize}
+  \item Intel/Clang runtime has one task queue per thread, and allows work-stealing.
+  \item Gives lower contention than case where all threads access a single queue.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \subsection{Data sharing clauses}
 \begin{frame}
 \frametitle{Data sharing clauses}
