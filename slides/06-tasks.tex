@@ -460,6 +460,7 @@ print *, y+z
     \end{itemize}
    \item The \mintinline{fortran}|taskyield| construct allows tasks to be suspended so another task can start.
    \item Really useful when polling for a lock, otherwise the task never ``sleeps''.
+   \item Not all implementations actually suspend tasks (Intel/Clang does).
 \end{itemize}
 \end{frame}
 
