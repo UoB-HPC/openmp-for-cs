@@ -494,6 +494,7 @@ print *, y+z
 
 \begin{itemize}
   \item Generates a task for each loop iteration.
+  \item Shorthand for generating tasks in a tiled \mintinline{fortran}|parallel do| loop.
   \item Tasks form part of a \mintinline{fortran}|taskgroup|, unless use the \mintinline{fortran}|nogroup| clause.
   \item \mintinline{fortran}|grainsize(num)| clause: sets the minimum number of iterations for each generated task.
   \item \mintinline{fortran}|num_tasks(num)| clause: set number of tasks to create. Unlikely to want to specify this in practice.
