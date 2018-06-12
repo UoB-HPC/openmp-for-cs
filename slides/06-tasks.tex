@@ -444,6 +444,55 @@ print *, y+z
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{New dependency clauses}
+OpenMP 5.0 will introduce the \mintinline{fortran}|mutexinoutset| dependency qualifier.
+\begin{itemize}
+  \item Ensures commutativity between tasks depending on \mintinline{fortran}|x|.
+  \item Sibling tasks with \mintinline{fortran}|depend(inout: x)| would need to be run in the order the tasks were generated.
+  \item \mintinline{fortran}|mutexinoutset| means they can run in any order, not just the generated order.
+  \item Tasks still won't run in parallel.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{mutexinoutset}
+\begin{columns}
+\begin{column}{.5\textwidth}
+\begin{minted}[breaklines,frame=single,fontsize=\small]{fortran}
+!$omp task (inout: y)
+call slow(y) ! Task A
+!$omp end task
+
+!$omp task (inout: z)
+call fast(z) ! Task B
+!$omp end task
+
+!$omp task depend(inout: res) depend(in: y)
+res = res + y ! Task C
+!$omp end task
+
+!$omp task depend(inout: res) depend(in: z)
+res = res + z ! Task D
+!$omp end task
+\end{minted}
+\end{column}
+
+\begin{column}{.5\textwidth}
+\begin{itemize}
+  \item Task A and B will start.
+  \item Task C can start once Task A has finished.
+  \item Task D can start once both Tasks B and C have finished.
+  \item Ideally should just wait on Task B, not C.
+  \item Solved by replacing \mintinline{fortran}|depend(inout: res)| with \mintinline{fortran}|depend(mutexinoutset: res)|.
+\end{itemize}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \subsection{Suspending tasks}
 \begin{frame}
 \frametitle{Suspending tasks with taskyield}
