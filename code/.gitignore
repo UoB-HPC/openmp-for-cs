@@ -22,3 +22,4 @@ stencil_numa
 stencil_target
 fibonacci
 lu
+lu_recursive
