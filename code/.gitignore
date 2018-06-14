@@ -21,3 +21,4 @@ stencil_optimised
 stencil_numa
 stencil_target
 fibonacci
+lu
