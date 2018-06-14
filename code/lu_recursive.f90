@@ -99,7 +99,7 @@ subroutine col(N, A, rs, re, cs, ce)
 
 end subroutine col
 
-! Subtract rows
+! Subtract the rows off the diagonal block from rows in the inner block
 subroutine inner(N, A, rs, re, cs, ce, ds, de)
 
   implicit none
