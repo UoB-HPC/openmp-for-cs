@@ -194,9 +194,9 @@ program lu
   integer :: i, j
   real(kind=8) :: tic, toc
 
-  ! N must be even for recursive algorithm
-  if (MOD(N,2) .ne. 0) then
-    print *, "Error: N must be even"
+  ! N must be a power of 2 for the recursive algorithm
+  if (2.0**(log(1.0*N)/log(2.)) .ne. N) then
+    print *, "Error: N must be a power of 2"
     stop
   end if
 
