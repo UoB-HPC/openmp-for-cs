@@ -41,17 +41,34 @@ subroutine diag(N, A, i, Ni)
   integer :: N
   real(kind=8) :: A(N,N)
   integer :: i, Ni
+  integer :: matsize
 
   integer :: ii, jj, kk
 
-  do ii = i, Ni
-    do jj = ii+1, Ni
-      A(jj,ii) = A(jj,ii) / A(ii,ii)
-      do kk = ii+1, Ni
-        A(jj,kk) = A(jj,kk) - (A(jj,ii)*A(ii,kk))
+  print *, "Diag", i, Ni
+
+  matsize = Ni-i+1
+
+  ! If the block is small enough, just solve it.
+  if (matsize .eq. 1) then
+
+    do ii = i, Ni
+      do jj = ii+1, Ni
+        A(jj,ii) = A(jj,ii) / A(ii,ii)
+        do kk = ii+1, Ni
+          A(jj,kk) = A(jj,kk) - (A(jj,ii)*A(ii,kk))
+        end do
       end do
     end do
-  end do
+
+  ! Otherwise, split the matrix up into quarters
+  else
+    call diag(N, A, i, i-1+matsize/2)
+    call row(N, A, i, i-1+matsize/2, i+matsize/2, i-1+matsize/2+matsize/2)
+    call col(N, A, i+matsize/2, i-1+matsize/2+matsize/2, i, i-1+matsize/2)
+    call inner(N, A, i+matsize/2, i+matsize/2+matsize/2-1, i+matsize/2, i+matsize/2+matsize/2-1, i, i-1+matsize/2)
+    call diag(N, A, i+matsize/2, i+matsize/2+matsize/2-1)
+  end if
 
 end subroutine diag
 
@@ -66,6 +83,8 @@ subroutine row(N, A, rs, re, cs, ce)
   integer :: rs, re, cs, ce
 
   integer :: i, j, k
+
+  print *, "Row", rs, re, cs, ce
 
   do i = rs, re
     do j = i+1, re
@@ -88,6 +107,8 @@ subroutine col(N, A, rs, re, cs, ce)
 
   integer :: i, j, k
 
+  print *, "Col", rs, re, cs, ce
+
   do i = cs, ce
     do j = rs, re
       A(j,i) = A(j,i) / A(i,i)
@@ -109,6 +130,8 @@ subroutine inner(N, A, rs, re, cs, ce, ds, de)
   integer :: rs, re, cs, ce, ds, de
 
   integer :: i, j, k
+
+  print *, "Inner", rs, re, cs, ce, ds, de
 
   do i = ds, de
     do j = rs, re
@@ -166,7 +189,7 @@ program lu
 
   real(kind=8), allocatable :: A(:,:)
   real(kind=8), allocatable :: Agold(:,:)
-  integer :: N = 1000
+  integer :: N = 8
 
   integer :: i, j
   real(kind=8) :: tic, toc
