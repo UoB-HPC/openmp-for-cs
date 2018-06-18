@@ -62,6 +62,8 @@ subroutine diag(N, A, i, Ni)
     end do
 
   ! Otherwise, split the matrix up into quarters
+  ! | diag  | row   |
+  ! |  col  | inner |
   else
     call diag(N, A, i, i-1+matsize/2)
     call row(N, A, i, i-1+matsize/2, i+matsize/2, i-1+matsize/2+matsize/2)
@@ -81,18 +83,39 @@ subroutine row(N, A, rs, re, cs, ce)
   integer :: N
   real(kind=8) :: A(N,N)
   integer :: rs, re, cs, ce
+  integer :: matsize
 
   integer :: i, j, k
 
-  print *, "Row", rs, re, cs, ce
+  matsize = re-rs+1
 
-  do i = rs, re
-    do j = i+1, re
-      do k = cs, ce
-        A(j,k) = A(j,k) - (A(j,i)*A(i,k))
+  print *, "Row", matsize, rs, re, cs, ce
+
+  ! If the block is small enough solve the row
+  if (matsize .eq. 1) then
+
+    do i = rs, re
+      do j = i+1, re
+        do k = cs, ce
+          A(j,k) = A(j,k) - (A(j,i)*A(i,k))
+        end do
       end do
     end do
-  end do
+
+  ! Otherwise, split the matrix up into quarters
+  ! |  row  |  row  |
+  ! | inner | inner |
+  else
+    ! Left side
+    call row(N, A, rs, rs-1+matsize/2, cs, cs-1+matsize/2)
+    call inner(N, A, rs+matsize/2, re, cs, cs-1+matsize/2, rs, rs-1+matsize/2)
+    call row(N, A, rs+matsize/2, re, cs, cs-1+matsize/2)
+
+    ! Right side
+    call row(N, A, rs, rs-1+matsize/2, cs+matsize/2, ce)
+    call inner(N, A, rs+matsize/2, re, cs+matsize/2, ce, rs, rs-1+matsize/2)
+    call row(N, A, rs+matsize/2, re, cs+matsize/2, ce)
+  end if
 
 end subroutine row
 
