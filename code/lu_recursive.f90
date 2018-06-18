@@ -172,18 +172,39 @@ subroutine inner(N, A, rs, re, cs, ce, ds, de)
   integer :: N
   real(kind=8) :: A(N,N)
   integer :: rs, re, cs, ce, ds, de
+  integer :: matsize
 
   integer :: i, j, k
 
   print *, "Inner", rs, re, cs, ce, ds, de
 
-  do i = ds, de
-    do j = rs, re
-      do k = cs, ce
-        A(j,k) = A(j,k) - (A(j,i)*A(i,k))
+  matsize = re-rs+1
+
+  ! If the block is small enough solve the column
+  if (matsize .eq. 1) then
+
+    do i = ds, de
+      do j = rs, re
+        do k = cs, ce
+          A(j,k) = A(j,k) - (A(j,i)*A(i,k))
+        end do
       end do
     end do
-  end do
+
+  ! Otherwise, split the matrix up into quarters
+  ! | inner | inner |
+  ! | inner | inner |
+  else
+    call inner(N, A, rs, rs-1+matsize/2, cs, cs-1+matsize/2, ds, ds-1+matsize/2)
+    call inner(N, A, rs, rs-1+matsize/2, cs+matsize/2, ce,   ds, ds-1+matsize/2)
+    call inner(N, A, rs+matsize/2, re,   cs, cs-1+matsize/2, ds, ds-1+matsize/2)
+    call inner(N, A, rs+matsize/2, re,   cs+matsize/2, ce,   ds, ds-1+matsize/2)
+
+    call inner(N, A, rs, rs-1+matsize/2, cs, cs-1+matsize/2, ds+matsize/2, de)
+    call inner(N, A, rs, rs-1+matsize/2, cs+matsize/2, ce,   ds+matsize/2, de)
+    call inner(N, A, rs+matsize/2, re,   cs, cs-1+matsize/2, ds+matsize/2, de)
+    call inner(N, A, rs+matsize/2, re,   cs+matsize/2, ce,   ds+matsize/2, de)
+  end if
 
 end subroutine inner
 
