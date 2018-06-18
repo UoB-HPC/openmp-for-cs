@@ -45,8 +45,6 @@ subroutine diag(N, A, i, Ni)
 
   integer :: ii, jj, kk
 
-  print *, "Diag", i, Ni
-
   matsize = Ni-i+1
 
   ! If the block is small enough, just solve it.
@@ -89,8 +87,6 @@ subroutine row(N, A, rs, re, cs, ce)
 
   matsize = re-rs+1
 
-  print *, "Row", matsize, rs, re, cs, ce
-
   ! If the block is small enough solve the row
   if (matsize .eq. 1) then
 
@@ -130,8 +126,6 @@ subroutine col(N, A, rs, re, cs, ce)
   integer :: matsize
 
   integer :: i, j, k
-
-  print *, "Col", rs, re, cs, ce
 
   matsize = re-rs+1
 
@@ -175,8 +169,6 @@ subroutine inner(N, A, rs, re, cs, ce, ds, de)
   integer :: matsize
 
   integer :: i, j, k
-
-  print *, "Inner", rs, re, cs, ce, ds, de
 
   matsize = re-rs+1
 
