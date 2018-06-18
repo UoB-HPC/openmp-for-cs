@@ -246,7 +246,7 @@ program lu
 
   real(kind=8), allocatable :: A(:,:)
   real(kind=8), allocatable :: Agold(:,:)
-  integer :: N = 8
+  integer :: N = 1024
 
   integer :: i, j
   real(kind=8) :: tic, toc
