@@ -35,7 +35,7 @@ end subroutine dgetrf
 
 ! Diagonalise the block
 ! This is regular Gaussian elimination
-subroutine diag(N, A, i, Ni)
+recursive subroutine diag(N, A, i, Ni)
 
   implicit none
   integer :: N
@@ -74,7 +74,7 @@ end subroutine diag
 
 ! Subtract multiples of rows from lower rows in the block
 ! Multiple factor is read from the diagonal block
-subroutine row(N, A, rs, re, cs, ce)
+recursive subroutine row(N, A, rs, re, cs, ce)
 
   implicit none
 
@@ -116,7 +116,7 @@ subroutine row(N, A, rs, re, cs, ce)
 end subroutine row
 
 ! Store L term under diagonal and subtract rows
-subroutine col(N, A, rs, re, cs, ce)
+recursive subroutine col(N, A, rs, re, cs, ce)
 
   implicit none
 
@@ -159,7 +159,7 @@ subroutine col(N, A, rs, re, cs, ce)
 end subroutine col
 
 ! Subtract the rows off the diagonal block from rows in the inner block
-subroutine inner(N, A, rs, re, cs, ce, ds, de)
+recursive subroutine inner(N, A, rs, re, cs, ce, ds, de)
 
   implicit none
 
