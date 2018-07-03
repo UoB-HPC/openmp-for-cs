@@ -191,6 +191,8 @@ Serial/sequential execution:
 \end{tikzpicture}
 \end{center}
 
+\pause
+
 In a \emph{fork-join} model, code starts serial, \emph{forks} a \emph{team} of threads then \emph{joins} them back to serial execution.
 \begin{center}
 \begin{tikzpicture}
@@ -318,7 +320,8 @@ In general it's better to use environment variables if you need to do this, as t
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Thread API calls}
-Most parallel programs are written in a SPMD style: {\bf S}ingle {\bf P}rogram, {\bf M}ultiple {\bf D}ata.
+Most parallel programs are written in a SPMD style: \newline
+{\bf S}ingle {\bf P}rogram, {\bf M}ultiple {\bf D}ata.
 \begin{itemize}
   \item MPI has a SPMD model.
   \item Threads run the same code, and use their ID to work out which data to operate on.
