@@ -713,7 +713,7 @@ More on this when we talk about vectorisation in a later session.
 \frametitle{The nowait clause}
 \begin{itemize}
   \item May have series of loops in your code which are independent.
-  \item Threads must wait/synchronise at the end of the loop \mintinline{fortran}|!$omp end do|.
+  \item Threads must wait/synchronise at the end of the loop.% \mintinline{fortran}|!$omp end do|.
   \item But it might be possible to delay this synchronisation using the \mintinline{fortran}|nowait| clause.
   \item When a thread finishes the first loop, it starts on the next loop.
 \end{itemize}
@@ -728,6 +728,7 @@ end do
 !$omp do
 do i = 1, N
   B(i) = i
+end do
 !$omp end do       ! Implicit barrier
 !$omp end parallel ! Implicit barrier
 \end{minted}
