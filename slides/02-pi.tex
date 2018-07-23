@@ -52,6 +52,34 @@
 \end{itemize}
 \end{frame}
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{The first exercise}
+
+\begin{itemize}
+  \item Parallelise a serial 5-point stencil code using OpenMP.
+  \item Solution is really just adding an OpenMP worksharing construct:
+\end{itemize}
+
+\begin{minted}[frame=single,breaklines]{fortran}
+!$omp parallel do collapse(2)
+do i = 1, nx
+  do j = 1, ny
+    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
+  end do
+end do
+!$omp end parallel do
+\end{minted}
+
+\begin{itemize}
+  \item OpenMP threads are created.
+  \item Loops are collapsed and iterations shared between threads.
+  \item Each thread computes its assigned portion of iteration space.
+  \item Threads synchronise and join.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 
 \section{Data sharing}
 \begin{frame}
