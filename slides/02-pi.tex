@@ -71,7 +71,7 @@ You must specify which data should be \emph{private} to each thread.
 \end{itemize}
 
 \begin{block}{Notice}
-Fortran variables being declared at the top of the routine mean you must think about this
+Fortran variables being declared at the top of the routine mean you must think about this.
 \end{block}
 
 \end{frame}
@@ -104,7 +104,7 @@ The pointer could be private, but the target will still be shared.
   \item \mintinline{fortran}|firstprivate(x)|
     Each thread gets its own \mintinline{fortran}|x| variable, and it is initialised to the value of the original variable entering the region.
   \item \mintinline{fortran}|lastprivate(x)|
-    Each thread gets its own \mintinline{fortran}|x| variable, and the original variable is updated from the last iteration.
+    Used for loops. Each thread gets its own \mintinline{fortran}|x| variable, and on exiting the region the original variable is updated taking the value from the sequentially last iteration.
 \end{itemize}
 
 These are the most common clauses that are needed.
@@ -113,13 +113,14 @@ These are the most common clauses that are needed.
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Data clauses}
-There is also the \mintinline{fortran}|threadprivate(x)| directive.
+There is also the \mintinline{fortran}|threadprivate(x)| directive (not a clause).
 \begin{itemize}
   \item This says to take a copy of the data in \emph{thread local storage} which is persistent across parallel regions.
-  \item The \mintinline{fortran}|copyin| directive is a means to initilise \mintinline{fortran}|threadprivate| data, copying from the master thread.
+  \item The \mintinline{fortran}|copyin| directive is a means to initialise \mintinline{fortran}|threadprivate| data, copying from the master thread.
 \end{itemize}
 
 Unlikely to use this clause.
+Might be useful if using \mintinline{fortran}|common| blocks (or \mintinline{c}|static| variables in C).
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ Simple \mintinline{fortran}|do| loop, which just sets a variable to the iteratio
 Each iteration prints out the current and next value of \mintinline{fortran}|x|, along with the thread number.
 Will see what happens with different data sharing clauses.
 
-\begin{minted}[linenos,breaklines,frame=single]{fortran}
+\begin{minted}[linenos,breaklines,frame=single, fontsize=\small]{fortran}
   !$omp parallel do private(x) / firstprivate(x) / lastprivate(x)
   do i = 1, N
     write (*,"(2X,A,I0,A,I0,A,I0)") "Thread ", omp_get_thread_num(), " setting x=", x, " to ", i
@@ -139,6 +140,7 @@ Will see what happens with different data sharing clauses.
   !$omp end parallel do
 \end{minted}
 N is set to 10.
+Ran using 4 threads.
 Full implementation: \mintinline{bash}|private.f90|.
 \end{frame}
 
@@ -160,8 +162,8 @@ private:
   Thread 0 setting x=2 to 3
  after: x=-1
 \end{minted}
-Each thread starts with its own \mintinline{fortran}|x|, which set to zero (the default value of an integer in Fortran).
-In C, it would probably be filled with garbage.
+Each thread starts with its own \mintinline{fortran}|x|.
+No guarantees of initial value, but happened to be zero this time.
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -213,12 +215,12 @@ On exiting the region, the original \mintinline{fortran}|x| is set to the value 
 \frametitle{Choosing default data sharing}
 \begin{alertblock}{Note}
 It is especially important to list private variables in Fortran.
-All variables are \emph{global} scope so \emph{everything} is shared by default.
+All variables have \emph{global} scope within each \mintinline{fortran}|subroutine| so \emph{everything} is shared by default.
 In C, local scoping rules makes this easier.
 \end{alertblock}
 
 \begin{itemize}
-  \item You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute. This is good practise.
+  \item You can force yourself to specify everything manually by using the \mintinline{fortran}|default(none)| attribute. This is good practice.
   \item You can also \mintinline{fortran}|default(private)| or \mintinline{fortran}|default(firstprivate)| to make everything private by default --- this might save a lot of typing in an old code with many temporary variables.
 \end{itemize}
 
@@ -226,6 +228,17 @@ In C, local scoping rules makes this easier.
 
 %-------------------------------------------------------------------------------
 \section{Calculating Pi}
+\begin{frame}
+\frametitle{Calculating Pi}
+Use a simple program to numerically approximate $\pi$ to explore:
+\begin{itemize}
+  \item Use of data sharing clauses.
+  \item Updating a shared variable in parallel.
+  \item Reductions.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Integration to calculate Pi}
 
@@ -281,12 +294,39 @@ Full implementation: \mintinline{bash}|pi.f90|.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Parallelising the loop}
+
+Use a worksharing directive to parallelise the loop.
+
+\begin{minted}[linenos,breaklines,frame=single]{fortran}
+  step = 1.0/num_steps
+  !$omp parallel do private(x)
+  do ii = 1, num_steps
+    x = (ii-0.5)*step
+    sum = sum + (4.0/(1.0+x*x))
+  end do
+  !$omp end parallel do
+  pi = step * sum
+\end{minted}
+
+\vfill
+
+What about data sharing?
+\begin{itemize}
+  \item \mintinline{fortran}|x| needs to be used independently by each thread, so mark as \mintinline{fortran}|private|.
+  \item \mintinline{fortran}|sum| needs to be updated by \emph{all} threads, so leave as \mintinline{fortran}|shared|.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{Critical regions}
 \begin{frame}[fragile]
 \frametitle{Parallelising with critical}
 \begin{itemize}
-  \item Add a simple \mintinline{fortran}|!$omp parallel do|\dots
-  \item But need to be careful changing the \mintinline{fortran}|sum| as this will be \emph{shared} between threads.
+  \item But need to be careful changing the \mintinline{fortran}|shared| variable, \mintinline{fortran}|sum|.
+  \item All threads can update this value directly!
   \item A \mintinline{fortran}|critical| region only allows one thread to execute at any one time. No guarantees of ordering.
 \end{itemize}
 
@@ -536,7 +576,7 @@ First private & 0.104 \\
 Full implementation: \mintinline{bash}|pi_private.f90|.
 
 \begin{center}
-\large Finally faster than serial! Around 3.5X faster.
+\large Finally faster than serial! Around 3.5X faster on 4 threads.
 \end{center}
 
 \end{frame}
@@ -611,6 +651,13 @@ Reduction     & 0.095 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\vfill
+
+Around 3.9X faster on 4 threads!
+
+\vfill
+
 
 \begin{block}{Recommendation}
 Use the \mintinline{fortran}|reduction| clause for reductions.
