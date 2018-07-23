@@ -15,12 +15,40 @@
 \begin{frame}
 \frametitle{Outline}
 \begin{itemize}
+  \item Recap
   \item Data sharing clauses
   \item The Pi program
   \item Critical regions
   \item Atomics
   \item False sharing issues
   \item Reductions
+\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------
+\section{Recap}
+\begin{frame}[fragile]
+\frametitle{Recap}
+\begin{itemize}
+  \item Fork/join execution model.
+
+  \item Shared memory model:
+    \begin{itemize}
+      \item All threads can read/write the \emph{same} memory.
+    \end{itemize}
+
+  \item Set number of threads with \mintinline{bash}|OMP_NUM_THREADS| environment variable.
+
+  \item Parallelise simple loops with worksharing clauses:
+  \begin{minted}[frame=single]{fortran}
+  !$omp parallel do
+  do i = 1, N
+    A(i) = ...
+  end do
+  !$omp end parallel do
+  \end{minted}
+
+  \item Talked about \mintinline{fortran}|collapse|, \mintinline{fortran}|nowait| and \mintinline{fortran}|schedule| clauses.
+
 \end{itemize}
 \end{frame}
 %-------------------------------------------------------------------------------
