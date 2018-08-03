@@ -88,6 +88,48 @@ Combined with the \mintinline{fortran}|parallel| and worksharing constructs from
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Cache bandwidth}
+
+Graph of aggregate cache bandwidth on different architectures:
+\begin{center}
+\includegraphics[width=0.8\textwidth]{cache_bandwidth}
+\end{center}
+
+\begin{itemize}
+  \item Clear cliff edges at cache capacity sizes (3 times x-axis).
+  \item As with latency: more performance from lower levels.
+\end{itemize}
+
+
+\footnotetext[1]{{\Tiny Deakin, T., Price, J., and McIntosh-Smith, S. (2017). Portable Methods for Measuring Cache Hierarchy Performance (poster).\\In Supercomputing. Denver, CO.}}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Streaming data}
+
+STREAM Triad kernel:
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel do
+do i = 1, N
+  a(i) = b(i) + scalar * c(i)
+end do
+!$omp end parallel do
+\end{minted}
+
+\begin{itemize}
+  \item Where \mintinline{fortran}|N| is large, the arrays exceed cache capacity.
+  \item This kernel has \emph{no} data reuse: data items are read or written once, then never used again.
+  \item Example of a \emph{streaming} data access pattern.
+  \item Performance is then bound by main memory bandwidth.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{Performance analysis}
 \begin{frame}
 \frametitle{Performance analysis}
