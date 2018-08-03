@@ -10,9 +10,11 @@
 \frame{\titlepage}
 
 %-------------------------------------------------------------------------------
+\section{Outline}
 \begin{frame}
 \frametitle{Outline}
 Now you know how to parallelise programs using OpenMP, how do you write fast programs in OpenMP?
+
 \begin{itemize}
   \item The cache hierarchy
   \item Performance analysis
@@ -21,6 +23,29 @@ Now you know how to parallelise programs using OpenMP, how do you write fast pro
   \item Memory access patterns
   \item Memory alignment
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Recap}
+\begin{frame}
+\frametitle{Recap}
+
+\begin{itemize}
+  \item Data sharing clauses:
+    \begin{itemize}
+    \item \mintinline{fortran}|shared|, \mintinline{fortran}|private|, \mintinline{fortran}|firstprivate|, \mintinline{fortran}|lastprivate|
+    \end{itemize}
+
+  \item Atomics and \mintinline{fortran}|critical| regions
+
+  \item False sharing and cache thrashing
+
+  \item Reductions with the \mintinline{fortran}|reduction| clause
+\end{itemize}
+
+Combined with the \mintinline{fortran}|parallel| and worksharing constructs from before, we've covered the OpenMP ``common core''.
+
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
