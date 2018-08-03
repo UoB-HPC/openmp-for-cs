@@ -311,7 +311,7 @@ Vector operations \\
 \frametitle{Auto-vectorisation}
 \begin{itemize}
   \item Modern compilers are very good at automatically vectorising your loops.
-  \item Fortran helps as arrays can not aliase (overlap), unlike C.
+  \item Fortran helps as arrays can not alias (overlap), unlike C.
   \item But compiler needs to be sure it's safe to vectorise.
   \item Read compiler reports to see if it's already vectorising.
     \begin{itemize}
@@ -320,7 +320,7 @@ Vector operations \\
       \item GNU (old): \mintinline{bash}|-ftree-vectorizer-verbose=2|
       \item GNU (new): \mintinline{bash}|-fopt-info-vec|
     \end{itemize}
-  \item Often memory access pattern which prevents (efficient) auto-vectorisation.
+  \item Often the memory access pattern prevents (efficient) auto-vectorisation.
 \end{itemize}
 \end{frame}
 
@@ -331,7 +331,7 @@ Vector operations \\
 \begin{itemize}
   \item Sometimes the compiler needs help in confirming loops are vectorisable.
   \item OpenMP \mintinline{fortran}|simd| constructs give this information.
-  \item Can combine with \mintinline{fortran}|parallel do| construct to ensure a parallel vector loop.
+  \item Can combine with \mintinline{fortran}|parallel do| construct to ensure a parallel vector loop: \mintinline{fortran}|omp parallel do simd|
   \item Generally want to vectorise inner loops and parallelise outer loops.
 \end{itemize}
 
@@ -347,7 +347,7 @@ end do
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{SIMD functions}
-Often have written an update function to update values in the loop:
+Say you've written an update function to update values in the loop:
 \begin{minted}[frame=single]{fortran}
 do i = 1, N
   A(i) = magic_maths(A(i))
@@ -405,6 +405,22 @@ end function
   \item \mintinline{fortran}|aligned(var)|: says the array is aligned (more on this shortly).
   \item \mintinline{fortran}|uniform(var)|: for \mintinline{fortran}|declare simd| construct, the variable is the same in all vector lanes.
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{SIMD summary}
+
+\begin{itemize}
+  \item Sometimes need to force the compiler to auto-vectorise (the correct) loop with the \mintinline{fortran}|simd| construct.
+  \item As with \mintinline{fortran}|parallel|, you are telling the compiler it is safe to vectorise and to ignore its data dependancy analysis.
+  \item Check the compiler report before and after the check it did the right thing!
+  \item Use \mintinline{fortran}|declare simd| and appropritae clauses if you need to create vectorised versions of functions.
+  \begin{itemize}
+    \item The clauses can give more information to the compiler so it does a better job.
+  \end{itemize}
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
