@@ -455,7 +455,7 @@ end do
 \begin{itemize}
   \item What do Fortran derived types look like in memory?
   \item Organised as an array of structures.
-  \item<2-> What happens when we vectorise?
+  \item<2-> What happens when we vectorise our loop over cells?
 \end{itemize}
 
 \begin{adjustbox}{max width={\textwidth}}
@@ -470,19 +470,17 @@ end do
     \draw (\i+3.5,.5) node {P4};
   }
 
-  \pause
   \foreach \i in {0,4,8,12} {
-    \draw[->] (\i+.5,-1) -- (\i+.5,0);
+    \draw<3->[->] (\i+.5,-1) -- (\i+.5,0);
   }
 \end{tikzpicture}
 \end{adjustbox}
 
-\pause
 \begin{itemize}
-  \item The \mintinline{fortran}|property1| values are gathered into a vector register.
-  \item After the computation, the results are scattered back into memory.
-  \item A cache line is 64 bytes, so only the first two values are on the first cache line.
-  \item Must read two cache lines to fill the vector up.
+  \item<4-> The \mintinline{fortran}|property1| values are gathered into a vector register.
+  \item<5-> After the computation, the results are scattered back into memory.
+  \item<6-> A cache line is 64 bytes, so only the first two values are on the first cache line.
+  \item<6-> Must read two cache lines to fill the vector up.
 \end{itemize}
 \end{frame}
 
@@ -513,7 +511,8 @@ end do
 \begin{frame}
 \frametitle{Structure of arrays}
 \begin{itemize}
-  \item What happens when we vectorise?
+  \item Order of data in memory has changed.
+  \item<2-> What happens when we vectorise?
 \end{itemize}
 
 \begin{adjustbox}{max width={\textwidth}}
@@ -533,20 +532,20 @@ end do
     \draw (\i+2.5,.5) node {P3};
   }
 
-  \pause
   \foreach \i in {0,...,3} {
-    \draw[->] (\i+.5,-1) -- (\i+.5,0);
+    \draw<3->[->] (\i+.5,-1) -- (\i+.5,0);
   }
 \end{tikzpicture}
 \end{adjustbox}
 
-\pause
+\onslide<4->{
 \begin{itemize}
   \item Coalesced memory accesses are key for high performance code.
   \item Adjacent vector lanes read adjacent memory locations.
   \item A cache line is 64 bytes, so can fill the vector from a single cache line.
   \item More efficient vectorisation.
 \end{itemize}
+}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -607,7 +606,7 @@ end do
 \frametitle{Memory access patterns}
 \begin{minted}{fortran}
 do i = 1, N
-  val = A(j,i) % A(j+3*i)
+  val = A(j,i) ! equiv. A(j+3*i)
 end do
 \end{minted}
 \begin{adjustbox}{max width={\textwidth}}
