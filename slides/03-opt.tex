@@ -45,6 +45,31 @@ Now you know how to parallelise programs using OpenMP, how do you write fast pro
 
 Combined with the \mintinline{fortran}|parallel| and worksharing constructs from before, we've covered the OpenMP ``common core''.
 
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Previous exercise}
+
+Take your parallel 5-point stencil, and implement a reduction:
+\begin{minted}[frame=single,breaklines,fontsize=\small]{fortran}
+total = 0.0
+!$omp parallel do collapse(2) reduction(+:total)
+do i = 1, nx
+  do j = 1, ny
+    Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
+    total = total + Atmp(i,j)
+  end do
+end do
+!$omp end parallel do
+\end{minted}
+
+\begin{itemize}
+  \item Well done if you managed this!
+  \item 5-point stencil is simple, but captures the \emph{essence} of more complicated codes.
+  \item Extension: did anyone try the parallelising the Jacobi solver?
+\end{itemize}
 
 \end{frame}
 
