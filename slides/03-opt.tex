@@ -205,7 +205,10 @@ end do
   \item Take this example:
     \begin{itemize}
       \item \mintinline{fortran}|a(i) = a(i) + b(i) * c(i)|
-      \item FP64 arrays. 24 bytes loaded, 8 bytes stored, 2 operations.
+      \item Assume FP64 arrays.
+      \item Count the data movement and floating point operations for each \mintinline{fortran}|i|.
+      \item 24 bytes loaded, 8 bytes stored.
+      \item Two floating point operations: one \mintinline{fortran}|+| and one \mintinline{fortran}|*|.
       \item CI of $2/32 = 1/16$.
     \end{itemize}
 \end{itemize}
@@ -217,7 +220,7 @@ end do
 Useful conceptual tool to establish whether compute or memory bandwidth bound.
 
 \begin{center}
-\begin{adjustbox}{max width={.7\textwidth}}
+\begin{adjustbox}{max width={.6\textwidth}}
 \begin{tikzpicture}
   \draw[->] (0,0)   -- (0,3);
   \draw[->] (0,0)   -- (7,0);
@@ -233,9 +236,9 @@ Useful conceptual tool to establish whether compute or memory bandwidth bound.
 \end{center}
 
 \begin{itemize}
+  \item The roof $F(I)$ is found from tech sheet data and/or micro-benchmarks.
   \item Runtime performance of kernel gives FLOP/s, analysis of bytes/FLOPS gives CI.
-  \item Kernel A is compute bound.
-  \item Kernel B is memory bandwidth bound.
+  \item Kernel A is compute bound; Kernel B is memory bandwidth bound.
   \item Both kernels require optimisation!
   \item If kernel is on the roof, then rate limiting factor is achieved.
 \end{itemize}
@@ -299,7 +302,7 @@ Vector operations \\
   \item Hence may increase the FLOP/s rate of the processor.
   \item Also results in fewer instructions to process (less pressure on instruction decode units).
   \item Vectors help make good use of the memory hierarchy (often the main benefit).
-  \item Helps you write code which has good access patterns to maximise bandwidth.
+  \item Vectorisation helps you write code which has good access patterns to maximise bandwidth.
 \end{itemize}
 \end{frame}
 
