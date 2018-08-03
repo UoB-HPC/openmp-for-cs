@@ -834,6 +834,11 @@ if (a .gt. b) then
   acc = acc + (a - b*c)
 end if
 \end{minted}
+
+\begin{minted}[frame=single]{C}
+if (a > b)
+  acc += a - b*c;
+\end{minted}
 \end{column}
 
 \begin{column}{0.5\textwidth}
@@ -842,9 +847,15 @@ Selection and masking
   \item Always evaluate expression and mask result
 \end{itemize}
 \begin{minted}[frame=single,breaklines]{fortran}
-temp = (a - b*c)
+temp = a - b*c
 mask = merge(1.0, 0.0, a .gt. b)
 acc = acc + (mask * temp)
+\end{minted}
+
+\begin{minted}[frame=single]{C}
+temp = a - b*c;
+mask = a > b ? 1.0 : 0.0;
+acc += mask * temp;
 \end{minted}
 \end{column}
 
