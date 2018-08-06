@@ -416,7 +416,7 @@ end function
   \item Sometimes need to force the compiler to auto-vectorise (the correct) loop with the \mintinline{fortran}|simd| construct.
   \item As with \mintinline{fortran}|parallel|, you are telling the compiler it is safe to vectorise and to ignore its data dependancy analysis.
   \item Check the compiler report before and after the check it did the right thing!
-  \item Use \mintinline{fortran}|declare simd| and appropritae clauses if you need to create vectorised versions of functions.
+  \item Use \mintinline{fortran}|declare simd| and appropriate clauses if you need to create vectorised versions of functions.
   \begin{itemize}
     \item The clauses can give more information to the compiler so it does a better job.
   \end{itemize}
