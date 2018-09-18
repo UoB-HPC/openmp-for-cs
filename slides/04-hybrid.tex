@@ -327,11 +327,43 @@ end do
 \begin{frame}
 \frametitle{Why combine MPI+OpenMP}
 \begin{itemize}
-  \item Larger fewer messages
-  \item Fewer MPI ranks
-  \item Parallelise other dimension not decomposed with MPI
+  \item Supercomputers are often constructed with a hierarchical structure:
+    \begin{itemize}
+      \item Shared memory nodes connected with a network.
+    \end{itemize}
+  \item Need MPI (or similar) to communicate between distribued nodes.
+  \item With multi-core, could just run MPI everywhere (flat MPI).
+  \item But there are advantages to running \emph{hybrid} MPI and OpenMP:
+    \begin{itemize}
+      \item Larger fewer messages to take advantage of network bandwidth.
+      \item Fewer MPI ranks to manage (fewer to synchronise and for collectives).
+      \item Can avoid memory copies for intra-node communication.
+      \item Reduced memory footprint.
+      \item Parallelise other problem dimensions not decomposed with MPI.
+    \end{itemize}
 \end{itemize}
 \end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Scaling}
+\begin{itemize}
+  \item Strong scaling:
+    \begin{itemize}
+      \item Take a fixed problem and add more compute resource.
+      \item Would hope runtime reduces with more resource.
+    \end{itemize}
+  \item Weak scaling:
+    \begin{itemize}
+      \item Take a fixed problem \emph{per compute resource}, and add more resource.
+      \item Problem gets bigger with more resources.
+      \item Would hope runtime stays constant.
+    \end{itemize}
+  \item In both cases, typically see scaling of MPI-only codes tail off at high node counts.
+  \item Hybrid MPI+OpenMP codes often continue scaling.
+\end{itemize}
+\end{frame}
+
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
@@ -384,7 +416,7 @@ mpirun -np 16 ./a.out
   call MPI_Init_thread(required, provided, ierr)
   \end{minted}
 
-  \item You specify a required thread support level, and it returns the the level it could support.
+  \item You specify a required thread support level, and it returns the level it could support.
   \item A good idea to check \mintinline{fortran}|provided .ge. required|.
 \end{itemize}
 \end{frame}
@@ -405,6 +437,8 @@ mpirun -np 16 ./a.out
   \item \mintinline{fortran}|MPI_THREAD_MULTIPLE| \\
   May spawn threads and any thread can make MPI calls. The MPI library has to deal with being called in parallel.
 \end{itemize}
+
+Remember to make sure ranks still match the MPI communications to avoid deadlock.
 
 \end{frame}
 
@@ -462,7 +496,7 @@ Any thread can call MPI whenever it likes. The \mintinline{fortran}|MPI_THREAD_M
   \item Launch 4 MPI ranks (one per socket).
     \begin{itemize}
       \item Leaves 16 cores per MPI rank for OpenMP threads to run on.
-      \item But need to make sure threads go to the right places!
+      \item But need to make sure processes \emph{and} threads go to the right places!
       \item Often close interaction with the queuing system --- system dependant behaviour.
     \end{itemize}
 \end{itemize}
@@ -472,6 +506,8 @@ Any thread can call MPI whenever it likes. The \mintinline{fortran}|MPI_THREAD_M
 \begin{frame}[fragile]
 \frametitle{Example: default placement}
 Example MPI rank placement with standard PBS setup.
+
+Job requested 2 nodes.
 
 \begin{minted}{bash}
 mpirun -np 4 ./a.out
@@ -511,6 +547,7 @@ mpirun -np 4 ./a.out
 \frametitle{Example: pin MPI to one core per socket}
 \begin{itemize}
   \item Tell the OS and MPI runtime to pin each MPI to the first core in each socket.
+  \item Then want to launch 4 OpenMP threads per process.
   \item For OpenMPI:
   \begin{minted}{bash}
   export OMP_NUM_THREADS=4
@@ -558,7 +595,9 @@ Use \mintinline{bash}|--report-bindings| flag to see what's being pinned where.
 \begin{frame}
 \frametitle{Example: pin MPI to socket}
 \begin{itemize}
-  \item Pin each MPI to cores on a socket, then OpenMP threads can spawn across the socket.
+  \item Pin each MPI process to the cores of a socket.
+  \item MPI process \emph{could} move around those cores.
+  \item OpenMP threads can spawn across the socket.
   \item OpenMPI gives three ways to do this:
   \begin{itemize}
     \item \mintinline{bash}|--bind-to-socket|
@@ -574,7 +613,16 @@ Use \mintinline{bash}|--report-bindings| flag to see what's being pinned where.
 \begin{itemize}
   \item Intel MPI will need different flags and environment variables, but tends to do the right thing by default.
   \item Cray MPI (MVAPICH) can be controlled using \mintinline{bash}|aprun|.
+    \begin{itemize}
+      \item Use the \mintinline{bash}|-d| flag to specify the threads per process.
+      \item Pinning usually happens correctly.
+    \end{itemize}
   \item Cray MPI with the Intel compiler needs a different set of \mintinline{bash}|aprun| flags.
+    \begin{itemize}
+      \item Default pinning is usually not what you expected.
+      \item Use the \mintinline{bash}|-cc| flag to specify correct thread pinning.
+    \end{itemize}
+  \item The \mintinline{bash}|amask| tool from TACC is very useful for discovering the pinning\footnote{\url{https://github.com/TACC/amask}}.
 \end{itemize}
 \end{frame}
 
