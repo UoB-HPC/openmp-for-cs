@@ -13,11 +13,32 @@
 \section{Outline}
 \begin{frame}
 \frametitle{Outline}
+Programming beyond a single multi-core CPU.
 \begin{itemize}
   \item Non-uniform Memory Access
   \item Thread affinity in OpenMP
   \item Combining MPI with OpenMP
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Recap}
+\begin{frame}
+\frametitle{Recap}
+
+We've already come a long way!
+
+\begin{itemize}
+  \item Parallelise loops with OpenMP: \mintinline{fortran}|!$omp parallel do|.
+  \item Data sharing clauses.
+  \item Synchronisation with barriers, atomics and \mintinline{fortran}|critical| regions.
+  \item Reductions with the \mintinline{fortran}|reduction| clause.
+  \item The cache hierarchy.
+  \item Performance analysis and the Roofline model.
+  \item Vectorisation along with the OpenMP \mintinline{fortran}|simd| construct.
+  \item Optimisations for memory access.
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
