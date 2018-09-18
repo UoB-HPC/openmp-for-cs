@@ -217,12 +217,13 @@ Recall this cartoon of a dual-socket, shared memory system:
 \begin{frame}
 \frametitle{Memory allocation}
 \begin{itemize}
-  \item What happens when you call \mintinline{fortran}|allocate(A(1:N))|?
+  \item What happens when you run \mintinline{fortran}|allocate(A(1:N))|?
   \pause
   \item Allocating memory does not necessarily allocate memory!
+  \item Memory is allocated when it's first used (i.e. \mintinline{fortran}|A(i) = 1.0|), one \emph{page} at a time.
   \item OS tends to use a \emph{first touch policy}.
-  \item Memory is allowed when it's first used, a page at a time.
-  \item In a NUMA architecture, this means the first thread to touch the array causes creation of space in the memory closest to that thread (core).
+  \item Memory is allocated in the closest NUMA region to the thread that first touches the data.
+  \item Ideally want threads to use data in local NUMA region to reduce socket-to-socket interconnect transfers.
 \end{itemize}
 \end{frame}
 
@@ -230,9 +231,7 @@ Recall this cartoon of a dual-socket, shared memory system:
 \subsection{First touch}
 \begin{frame}[fragile]
 \frametitle{Taking advantage of first touch}
-\begin{itemize}
-  \item Parallelising your data initialisation routine might mean your main loops go faster!
-\end{itemize}
+Parallelising your data initialisation routine might mean your main loops go faster!
 
 
 \begin{minted}[fontsize=\small,linenos,frame=single]{fortran}
