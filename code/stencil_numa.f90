@@ -1,4 +1,30 @@
 
+! Update the stencil
+subroutine kernel(nx, ny, A, Atmp, total)
+
+  implicit none
+
+  integer :: nx, ny
+  real(kind=8) :: A(0:nx+1, 0:ny+1)
+  real(kind=8) :: Atmp(0:nx+1, 0:ny+1)
+  real(kind=8) :: total
+
+  integer :: i, j
+
+  total = 0.0_8
+  !$omp parallel do reduction(+:total)
+  do j = 1, ny
+  !$omp simd
+    do i = 1, nx
+      Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) * 0.2_8
+      total = total + Atmp(i,j)
+    end do
+    !$omp end simd
+  end do
+  !$omp end parallel do
+
+end subroutine kernel
+
 ! 5 point stencil
 program stencil
 
@@ -19,7 +45,7 @@ program stencil
   allocate(Atmp(0:nx+1,0:ny+1))
 
   ! Initialise data to zero
-  !$omp parallel do collapse(2)
+  !$omp parallel do
   do j = 0, ny+1
     do i = 0, nx+1
       A(i,j) = 0.0_8
@@ -29,8 +55,8 @@ program stencil
   !$omp end parallel do
 
   ! Insert values in centre of grid
-  do j = ny/4, 3*ny/4
-    do i = nx/4, 3*nx/4
+  do i = nx/4, 3*nx/4
+    do j = ny/4, 3*ny/4
       A(i,j) = 1.0_8
     end do
   end do
@@ -44,15 +70,7 @@ program stencil
   do t = 1, ntimes
 
     ! Update the stencil
-    total = 0.0_8
-    !$omp parallel do collapse(2) reduction(+:total)
-    do j = 1, ny
-      do i = 1, nx
-        Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) * 0.2_8
-        total = total + Atmp(i,j)
-      end do
-    end do
-    !$omp end parallel do
+    call kernel(nx, ny, A, Atmp, total)
 
     ! Print out total
     write(*,"(I0,A,F15.5)") t, ": total=", total
