@@ -632,8 +632,15 @@ Use \mintinline{bash}|--report-bindings| flag to see what's being pinned where.
 \frametitle{Exercise}
 \begin{itemize}
   \item Make your parallel 5-point stencil code NUMA aware.
-  \item Parallelise the initialisation routine.
+    \begin{itemize}
+      \item Parallelise the initialisation routine.
+    \end{itemize}
+  \item Calculate improvements memory bandwidth.
+    \begin{itemize}
+      \item Use a profiler to measure remote memory accesses before/after optimisation.
+    \end{itemize}
   \item Experiment with thread affinity.
+  \item Extension: Add MPI to your OpenMP 5-point stencil to run it hybrid across multiple nodes.
 \end{itemize}
 \end{frame}
 
