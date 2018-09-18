@@ -42,6 +42,84 @@ We've already come a long way!
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Previous exercise}
+
+Vectorise and optimise memory access patterns of your parallel 5-point stencil code:
+\begin{minted}[frame=single,breaklines,fontsize=\small]{fortran}
+total = 0.0
+!$omp parallel do collapse(2) reduction(+:total)
+do j = 1, ny
+  do i = 1, nx
+    Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) * 0.2
+    total = total + Atmp(i,j)
+  end do
+end do
+!$omp end parallel do
+\end{minted}
+
+\begin{itemize}
+  \item Swapped loops to ensure stride-1 access pattern.
+  \item Removed division!
+  \item Checked vectorisation report: assume sizes arrays cause issue, so move kernel into \mintinline{fortran}|subroutine|.
+  \item May have tried \mintinline{fortran}|simd| construct on inner loop (removing \mintinline{fortran}|collapse| clause).
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Calculating memory bandwidth}
+Is your 5-point stencil code \emph{fast}?
+
+\pause
+
+Calculate memory bandwidth of the \emph{kernel} as a whole:
+\begin{itemize}[<+->]
+  \item Assume a ``perfect cache'' model: once you read a memory location, it's been cached and further reads are ``free'' within the kernel.
+  \item All of \mintinline{fortran}|A| array is read: $nx \times ny$ reads.
+  \item All of \mintinline{fortran}{Atmp} array is written: $nx \times ny$ reads.
+  \item Total memory moved: $2 \times nx \times ny \times 8$ bytes data moved (double precision) \emph{per iteration}.
+  \item Memory bandwidth: $\frac{ntimes \times 2 \times nx \times ny \times 8}{runtime}$ bytes/second.
+\end{itemize}
+
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Achieved memory bandwidth}
+
+Results on dual-socket Intel Xeon E5-2680 v4 @ 2.40GHz, 14 cores/socket.
+Compiled with Intel 2018 compiler, {\tt -O3 -xHost}.
+
+\vfill
+
+Set $nx=ny=20,000$ so arrays are 3.2~GB. Set $ntimes=30$. Removed \mintinline{fortran}|write| statement. Taken best of 5 runs.
+
+\vfill
+
+\pause
+Theoretical peak bandwidth\footnote{\url{https://ark.intel.com/products/91754/Intel-Xeon-Processor-E5-2680-v4-35M-Cache-2_40-GHz}}: $2 \times 76.8 \text{GB/s} = 153.6 \text{GB/s}$. \\
+STREAM Triad: 129.0~GB/s (84\% theoretical peak).
+
+\pause
+\begin{table}
+\begin{tabular}{ccc}
+\toprule
+Version & Runtime (s) & Memory bandwidth (GB/s)\\
+\midrule
+Initial parallel reduction & 25.667 &  7.48 \\
+Swap loops + vectorise     &  4.876 & 39.38 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Achieving 30.5\% of STREAM memory bandwidth.
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{NUMA}
 \begin{frame}
 \frametitle{NUMA Architecture}
