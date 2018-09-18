@@ -54,14 +54,15 @@ We've already come a long way!
 \frametitle{Previous exercise}
 
 Vectorise and optimise memory access patterns of your parallel 5-point stencil code:
-\begin{minted}[frame=single,breaklines,fontsize=\small]{fortran}
-total = 0.0
-!$omp parallel do collapse(2) reduction(+:total)
+\begin{minted}[frame=single,breaklines,fontsize=\scriptsize]{fortran}
+!$omp parallel do reduction(+:total)
 do j = 1, ny
+  !$omp simd
   do i = 1, nx
     Atmp(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) * 0.2
     total = total + Atmp(i,j)
   end do
+  !$omp end simd
 end do
 !$omp end parallel do
 \end{minted}
@@ -69,8 +70,8 @@ end do
 \begin{itemize}
   \item Swapped loops to ensure stride-1 access pattern.
   \item Removed division!
+  \item Use \mintinline{fortran}|simd| construct on inner loop (removing \mintinline{fortran}|collapse| clause).
   \item Checked vectorisation report: assume sizes arrays cause issue, so move kernel into \mintinline{fortran}|subroutine|.
-  \item May have tried \mintinline{fortran}|simd| construct on inner loop (removing \mintinline{fortran}|collapse| clause).
 \end{itemize}
 
 \end{frame}
