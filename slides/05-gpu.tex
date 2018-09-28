@@ -638,6 +638,29 @@ Direction defined from the \emph{host} perspective.
 %-------------------------------------------------------------------------------
 \subsection{Enter/exit data constructs}
 \begin{frame}[fragile]
+\frametitle{Memory movement best practice}
+
+\begin{minted}[frame=single]{fortran}
+call initilise(A,B,C)
+
+do t = 1, N
+  call update(A)
+  call update(B)
+  call update(C)
+end do
+\end{minted}
+
+\begin{itemize}
+  \item Scientific codes tend to initialise data at the start, then run many kernels.
+  \item Generally don't worry about timing of initialisation.
+  \item Poor practice in MPI would for example gather and scatter data to reinitialise data every iteration.
+  \item Same applies between host and device memory spaces!
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
 \frametitle{Enter/exit data constructs}
 \begin{itemize}
   \item Often want to perform initial device data environment setup once, run through iterative loop, copying back at end.
