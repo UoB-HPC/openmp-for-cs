@@ -718,15 +718,16 @@ end do
 \begin{itemize}
   \item Often need to transfer data between host and device between different \mintinline{fortran}|target| regions.
   \item E.g. the host does something between the two regions.
-  \item Use the \mintinline{fortran}|update| construct to move the data explicitly between host and device.
   \item Example on next slide\dots
+  \item Use the \mintinline{fortran}|update| construct to move the data explicitly between host and device, in either direction.
+  \item Remember: direction is from the \emph{host's} perspective.
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Update construct}
-\begin{minted}[frame=single,fontsize=\small,linenos]{fortran}
+\begin{minted}[frame=single,fontsize=\footnotesize,linenos]{fortran}
 !$omp target enter data map(to: A, B, C)
 !$omp target
 ... ! Use A, B and C on device
@@ -746,6 +747,34 @@ A = 1.0
 !$omp end target
 
 !$omp target exit data map(from: C)
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Halo exchange}
+Use the \mintinline{fortran}|update| clause with a typical halo exchange pattern.
+
+\begin{minted}[frame=single,linenos,fontsize=\footnotesize]{fortran}
+!$omp target enter data map(...)
+
+do t = 1, N
+  !$omp target ...
+    ... ! run kernel
+  !$omp end target ...
+
+  ! Copy latest halo data from device to host
+  !$omp target update from(halo)
+
+  ! Exchange with MPI
+  call MPI_Sendrecv(halo, ...)
+
+  ! Copy neighbour rank data to device
+  !$omp target update to(halo)
+end do
+
+!$omp target exit data map(...)
 \end{minted}
 
 \end{frame}
