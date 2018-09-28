@@ -13,6 +13,11 @@
 \section{Outline}
 \begin{frame}
 \frametitle{Outline}
+
+\begin{itemize}
+  \item Quick recap of NUMA exercise
+\end{itemize}
+
 \begin{itemize}
   \item GPU introduction
   \item The OpenMP \mintinline{fortran}|target| construct
@@ -21,6 +26,76 @@
   \item Asynchronous offload
   \item Tools
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Recap}
+\begin{frame}
+\frametitle{Previous exercise}
+
+Take your vectorised 5-point stencil code, with optimised memory access patterns, and consider NUMA issues.
+\begin{itemize}
+  \item Only one change required: add \mintinline{fortran}|!$omp parallel do| to initilisation loops.
+\end{itemize}
+
+
+Dual-socket Intel Xeon E5-2680 v4 @ 2.40GHz (2x14 cores), Intel 2018, {\tt -O3 -xHost}.
+$nx=ny=20,000$, $ntimes=30$. Removed \mintinline{fortran}|write| statement. Taken best of 5 runs.
+
+\begin{table}
+\begin{tabular}{ccc}
+\toprule
+Version & Runtime (s) & Memory bandwidth (GB/s)\\
+\midrule
+Initial parallel reduction & 25.667 &  7.48 \\
+Swap loops + vectorise     &  4.876 & 39.38 \\
+NUMA aware initialisation  &  2.365 & 81.18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Previous exercise}
+
+\begin{itemize}
+  \item 81.18~GB/s is 63\% of STREAM Triad bandwidth on this Broadwell system.
+  \item This is good! We wouldn't expect to reach Triad bandwidth for more realistic examples.
+  \item Missing bandwidth can be explained by looking at vectorisation reports:
+  \begin{itemize}
+    \item The STREAM kernels use \emph{streaming stores}, and the 5-point stencil doesn't.
+  \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Streaming stores}
+
+\begin{itemize}
+  \item Streaming stores write directory to main memory, avoiding cache.
+  \item Prevents invoking Intel's read-for-ownership mechanism:
+  \begin{itemize}
+    \item A write to cache required first \emph{reading} the memory (to place it in cache),
+    \item and then writing to it.
+    \item Doubles the data movement.
+  \end{itemize}
+
+\vfill
+\pause
+
+  \item STREAM Triad \emph{without} streaming stores gets 94.6~GB/s instead of 129.0~GB/s.
+  \item Our kernel can't use streaming stores (alignment): 85.8\% achievable bandwidth.
+
+\vfill
+\pause
+
+  \item Much closer! Missing bandwidth may be gained through improving data locality in caches (via tiling).
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
