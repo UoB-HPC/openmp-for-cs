@@ -673,11 +673,11 @@ end do
 
 do t = 1, N
   !$omp target
-  ... ! Read A and B, write C
+  ... ! E.g. Read A and B, write C
   !$omp end target
 end do
 
-!$omp target exit data map(from: C(1:N))
+!$omp target exit data map(from: C)
 
 \end{minted}
 Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|target| region in the big loop.
