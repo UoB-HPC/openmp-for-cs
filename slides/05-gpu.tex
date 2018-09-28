@@ -783,7 +783,7 @@ end do
 \section{Reductions}
 \begin{frame}[fragile]
 \frametitle{Reductions}
-\begin{minted}[frame=single,breaklines]{fortran}
+\begin{minted}[frame=single,breaklines,fontsize=\small]{fortran}
 integer :: i, N = 1000
 real(kind=8), allocatable :: A(:), B(:)
 real(kind=8) :: total
@@ -798,9 +798,9 @@ end do
 \end{minted}
 
 \begin{itemize}
-  \item \mintinline{fortran}|total| is a scalar, so by default is \mintinline{fortran}|firstprivate|.
+  \item \mintinline{fortran}|total| is a scalar, so by default is mapped \mintinline{fortran}|firstprivate|.
   \item I.e. Each thread on the device gets its own copy.
-  \item Importantly, it is not copied back to the host!
+  \item Importantly, it is \emph{not} copied back to the host at the end!
   \item You \emph{must} use a \mintinline{fortran}|map| clause to bring the result back.
 \end{itemize}
 
