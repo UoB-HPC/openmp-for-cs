@@ -815,6 +815,7 @@ end do
   \item The \mintinline{fortran}|nowait| clause causes the \mintinline{fortran}|target| region to be offloaded as a task.
   \item The host thread can continue working asynchronously with the device!
   \item Must synchronise using \mintinline{fortran}|taskwait|, or at a \mintinline{fortran}|barrier| (explicit or implicit) depending on host threading design.
+  \item Uses the OpenMP tasking semantics.
 \end{itemize}
 \end{frame}
 
