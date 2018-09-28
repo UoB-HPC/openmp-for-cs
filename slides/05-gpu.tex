@@ -684,6 +684,34 @@ Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|t
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Vector addition with memory movement}
+
+\begin{minted}[frame=single,fontsize=\small]{fortran}
+! Initialise on host
+allocate(A(N), B(N), C(N))
+A = 1.0
+B = 2.0
+
+! Copy A and B to device, and allocate space for C
+!$omp target enter data map(to: A, B) map(alloc: C)
+
+! Run vector add on device
+!$omp target teams distribute parallel do
+do i = 1, N
+  c(i) = a(i) + b(i)
+end do
+!$omp end target teams distribute parallel do
+
+! Copy C back to host
+!$omp target exit data map(from: C)
+
+\end{minted}
+
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \subsection{Update}
 \begin{frame}
 \frametitle{Update construct}
