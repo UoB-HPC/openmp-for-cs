@@ -102,6 +102,13 @@ NUMA aware initialisation  &  2.365 & 81.18 \\
 \section{GPU introduction}
 \begin{frame}
 \frametitle{GPU performance}
+Why use a GPU?
+\begin{itemize}
+  \item Hardware trends developing highly parallel processors.
+  \item Many simple cores vs few complex cores is one approach.
+  \item E.g.: NVIDIA Volta GPUs offer 4.4X memory bandwidth and 1.9X the FLOPS/s of dual-socket Intel Xeon (Skylake).
+\end{itemize}
+
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
@@ -132,17 +139,13 @@ NUMA aware initialisation  &  2.365 & 81.18 \\
 \end{column}
 \end{columns}
 
-\begin{itemize}
-  \item Volta GPUs offer 4.4X memory bandwidth and 1.9X the FLOPS/s of dual-socket Skylake.
-\end{itemize}
-
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Unlocking this potential}
 \begin{itemize}
-  \item GPUs made of many cores (SMs):
+  \item GPUs made of many cores. NVIDIA call them Streaming Multiprocessors (SMs):
     \begin{itemize}
       \item V100 has 80 SMs.
       \item P100 has 56 SMs.
@@ -173,19 +176,54 @@ Massive amounts of parallelism to exploit.
 
 %-------------------------------------------------------------------------------
 \section{OpenMP device model}
-\begin{frame}[fragile]
+\begin{frame}
 \frametitle{Device model}
+OpenMP has a host/device model.
+
+\begin{center}
+\begin{tikzpicture}
+
+  \draw (0,0) rectangle (2,2);
+  \draw (1,1) node {CPU};
+
+  \draw (-0.5, 2.2) rectangle (2.5,3.0);
+  \draw (1,2.6) node {CPU memory};
+  \draw (1,2) -- (1,2.2);
+
+  \draw (4,0) rectangle (7,1);
+  \draw (5.5,0.5) node {Device};
+
+  \draw (4,1.5) rectangle (7,2.5);
+  \draw (5.5,2) node {Device memory};
+  \draw (5.5,1) -- (5.5,1.5);
+
+  \draw (2,1) -- (4,0.5);
+
+
+\end{tikzpicture}
+\end{center}
+
 \begin{itemize}
-  \item OpenMP has a host/device model.
+  \item Can have more than one device.
+  \item Devices are connected to a host CPU via interconnect, such as PCIe or NVLink.
+  \item Devices come with their own memory. On NVIDIA HPC GPUs Pascal/Volta this is HBM.
+\end{itemize}
+
+
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Execution model}
+\begin{itemize}
   \item Execution begins on the host CPU, with zero or more devices connected to the host.
   \item Memory spaces \emph{not} shared!
-  \item Some data copied automatically, plus explicit copying.
+  \item In OpenMP, some data copied automatically, plus controls for explicit copying.
   \item Directives are used to transfer execution to the device.
   \begin{minted}{fortran}
   !$omp target [clause [clause] ...]
   !$omp end target
   \end{minted}
-  \item Host execution idles until target region completes (exact semantics based on tasks).
+  \item Host execution idles until target region completes (exact semantics based on tasks: see next session!).
 \end{itemize}
 
 \vfill
@@ -216,6 +254,9 @@ Massive amounts of parallelism to exploit.
 \section{Target construct}
 \begin{frame}[fragile]
 \frametitle{The target construct}
+
+Get some code region running on the device.
+
 \begin{minted}{fortran}
 !$omp target [clause [clause]...]
 !$omp end target 
