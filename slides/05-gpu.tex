@@ -963,6 +963,31 @@ nvprof --print-gpu-trace ./stencil_target
   \item Extra: Think about the performance compared to your CPU version.
 \end{itemize}
 \end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Summary}
+\begin{frame}[fragile]
+\frametitle{Summary}
+\begin{itemize}
+  \item Can program a GPU using OpenMP with a single pragma!
+    \begin{minted}{fortran}
+    !$omp target teams distribute parallel do
+    \end{minted}
+
+  \item Host/device execution model.
+
+  \item Data movement between host and device data regions using:
+    \begin{itemize}
+      \item \mintinline{fortran}|map| clauses,
+      \item \mintinline{fortran}|target enter/exit data| constructs,
+      \item \mintinline{fortran}|target update| constructs.
+    \end{itemize}
+
+  \item The need to map back result of a reduction.
+
+\end{itemize}
+\end{frame}
+
 %-------------------------------------------------------------------------------
 \end{document}
 
