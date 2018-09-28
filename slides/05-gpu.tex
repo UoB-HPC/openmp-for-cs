@@ -843,6 +843,22 @@ call expensive_io_routine()
 %-------------------------------------------------------------------------------
 \section{Tools}
 \begin{frame}
+\frametitle{Compiler support}
+\begin{itemize}
+  \item {\bf Cray} provided first vendor supported implementation targeting NVIDIA GPUs in late 2015. Latest version of CCE now supports all of OpenMP 4.5
+  \item {\bf IBM} XL compiler suite utilises their prior work with Clang to provide OpenMP target support for NVIDIA GPUs.
+  \item {\bf Clang} compiler supports OpenMP 4.5 offload to NVIDIA GPUs in 7.0. Culmination of upstreaming IBM's work.
+  \item {\bf Intel} began support for OpenMP 4.0 targetting Intel Xeon Phi coprocessors in 2013 (version 15.0). Compiler versions 17.0+ support OpenMP 4.5 (targetting Xeon Phi).
+  \item {\bf GCC} 6.1 introduced support for OpenMP 4.5 targetting Intel Xeon Phi and HSA-enabled AMD GPUs. 7.0 added support for NVIDIA GPUs.
+  \item {\bf PGI} compilers don't currently support OpenMP on GPUs (does support OpenMP on CPUs).
+\end{itemize}
+
+\url{www.openmp.org/resources/openmp-compilers-tools/}.
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
 \frametitle{CUDA Toolkit: NVprof}
 \begin{itemize}
   \item The CUDA toolkit works with code written in OpenMP 4.5 without any special configuration.
