@@ -520,8 +520,11 @@ Might not work out of the box as we haven't said anything about memory movement.
 \frametitle{Data movement}
 \begin{itemize}
   \item Remember: memory is \emph{not} shared between host and target.
-  \item Combination of implicit and explicit memory movement.
+  \item OpenMP uses a combination of implicit and explicit memory movement.
   \item This is the most complicated part of the offload specification.
+
+\vfill
+
   \item Memory movement is often a performance killer.
     \begin{itemize}
       \item A V100 has 900 GB/s peak memory bandwidth.
@@ -532,21 +535,45 @@ Might not work out of the box as we haven't said anything about memory movement.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Data regions}
 \begin{itemize}
   \item Data needs mapping between host and device memory spaces.
   \item Variable names exist in host and device space: the compiler sorts out which one you mean when you use them in your code.
-  \item Mapping/transfers occur when
+    \begin{minted}{fortran}
+      x(i) = 1.0
+
+      !$omp target
+      x(i) = 1.0
+      !$omp end target
+    \end{minted}
+  \item OpenMP runtime and compilers must work out when \mintinline{fortran}|x| is in host memory or device memory.
+  \item Like having two arrays: \mintinline{fortran}|h_x| and \mintinline{fortran}|d_x| on the host and device respectively.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data movement}
+
+\begin{itemize}
+  \item Mapping/transfers between host and device memory spaces occur when
     \begin{itemize}
       \item enter/exit a \mintinline{fortran}|target| region.
       \item \mintinline{fortran}|target enter/exit data| constructs.
       \item \mintinline{fortran}|update| construct.
     \end{itemize}
+
+\vfill
+
   \item Default behaviour:
     \begin{itemize}
       \item Scalars are mapped \mintinline{fortran}|firstprivate|.
       \item This means the \emph{do not} get copied back to the host.
+      \item Actually saves a memory copy as passed like a subroutine argument.
+
+\vfill
+
       \item Stack arrays are mapped \mintinline{fortran}|tofrom|.
       \item Heap arrays are not mapped by default.
     \end{itemize}
@@ -560,29 +587,51 @@ Might not work out of the box as we haven't said anything about memory movement.
 \begin{itemize}
   \item Specify the transfer of data between host and device on a \mintinline{fortran}|target| region.
 
-  \item Assume we have an array \mintinline{fortran}|A(1:N)| and a scalar \mintinline{fortran}|x|.
-  \item Can use array slicing, but slicing whole array buggy with Cray compiler.
+\vfill
 
-  \item On entering the region, copy from host to device:
+  \item Assume we have an array \mintinline{fortran}|A(1:N)| and a scalar \mintinline{fortran}|x|.
+  \item Sizes of arrays are generally known in Fortran so don't need to specify amount of data to copy.
+  \item Can use array slicing, but slicing whole array buggy with Cray compiler.
+  \item (you shouldn't be using assume sized arrays in your kernels anyway!)
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp target map(...)
+   ...
+!$omp end target
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{The map clause}
+Direction defined from the \emph{host} perspective.
+\begin{itemize}
+  \item
     \begin{minted}{fortran}
     map(to: A, x)
     \end{minted}
+    On entering the region, copy from host to device.
 
-  \item On exiting the region, copy from device to host. At start of region, these are uninitialised on the device.
+  \item
     \begin{minted}{fortran}
     map(from: A, x)
     \end{minted}
+    On exiting the region, copy from device to host. At start of \mintinline{fortran}|target| region, these are uninitialised on the device.
 
-  \item Same as applying \mintinline{fortran}|map(to: ...)| and \mintinline{fortran}|map(from: ...)|
+  \item
     \begin{minted}{fortran}
     map(tofrom: A, x)
     \end{minted}
+    Same as applying \mintinline{fortran}|map(to: ...)| and \mintinline{fortran}|map(from: ...)|
 
-  \item Allocate data on the device without copying from the host. It is uninitialised.
-      Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated on host too.
+  \item
     \begin{minted}{fortran}
     map(alloc: A)
     \end{minted}
+    Allocate data on the device without copying from the host. It is uninitialised.
+    Can later be copied back to the host (with \mintinline{fortran}|update| etc.) as long as allocated on host too.
 \end{itemize}
 \end{frame}
 
