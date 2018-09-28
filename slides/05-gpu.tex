@@ -251,14 +251,27 @@ OpenMP has a host/device model.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Practically programming a GPU}
+\begin{itemize}
+  \item Programming the kernels/loops themselves is often the ``easy'' bit!
+  \item Most of your programming time will be spent in getting minimal memory movement between host and device.
+  \item Performance of the kernels themselves is often good right away assuming you're working with code that was good on a CPU.
+  \item Optimisations for memory layout for vectorisation often apply to GPUs.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \section{Target construct}
 \begin{frame}[fragile]
 \frametitle{The target construct}
 
-Get some code region running on the device.
+Get code region running on the device.
 
 \begin{minted}{fortran}
 !$omp target [clause [clause]...]
+  ...
 !$omp end target 
 \end{minted}
 \begin{itemize}
@@ -284,6 +297,12 @@ end do
 !$omp end target teams distribute parallel do
 \end{minted}
 
+\vfill
+
+We'll walk through what the constituent parts mean.
+
+\vfill
+
 \begin{alertblock}{Warning!}
 Not using this combined statement can have severe performance issues.
 \end{alertblock}
@@ -292,20 +311,23 @@ Not using this combined statement can have severe performance issues.
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Execution model: teams}
-\begin{itemize}
-  \item OpenMP \emph{threads} on a device are grouped into a \emph{team}.
-  \item Can synchronise threads \emph{within} a team. \emph{Cannot} synchronise between teams.
-  \item Groups of teams are called a \emph{league}.
-  \item \mintinline{fortran}|target| construct offloads (serial) execution to device.
-  \item \mintinline{fortran}|teams| construct creates a league of times.
-  \item Master thread in each team (redundantly) executes the code.
-\end{itemize}
 
 \begin{minted}[frame=single]{fortran}
 !$omp target teams 
 ... ! Code
 !$omp end target teams
 \end{minted}
+
+\begin{itemize}
+  \item OpenMP \emph{threads} on a device are grouped into a \emph{team}.
+  \item Can synchronise threads \emph{within} a team.
+  \item \emph{Cannot} synchronise between teams (must exit \mintinline{fortran}|target| region for this).
+  \item Groups of teams are called a \emph{league}.
+  \item \mintinline{fortran}|target| construct offloads (serial) execution to device.
+  \item \mintinline{fortran}|teams| construct creates a league of times.
+  \item Master thread in \emph{each} team (redundantly) executes the code.
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -390,7 +412,6 @@ end do
   \item Launches threads within the team and distributes iterations across those threads.
   \item Note, iterations that were assigned to the team by the \mintinline{fortran}|distribute| construct are distributed across threads in the team.
   \item Can use the \mintinline{fortran}|schedule| clause too.
-  \item Remember, can synchronise between threads in the team.
 \end{itemize}
 
 \begin{minted}[frame=single]{fortran}
@@ -461,8 +482,26 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{SIMD construct}
+\begin{itemize}
+  \item The \mintinline{fortran}|simd| construct is also valid on the \mintinline{fortran}|distribute parallel do| construct.
+  \item OpenMP says this means SIMD instructions are generated.
+  \item Minor implementation details differ between compilers.
+  \item Clang and IBM XL compilers ignore the \mintinline{fortran}|simd| clause.
+  \item Cray ignores the \mintinline{fortran}|parallel do| and issues a warning about it, but does a good job of autovectorising.
+  \item \mintinline{fortran}|!$omp target teams distribute parallel do| is a portable solution for practically obtaining the same parallelism across compilers.
+\end{itemize}
+
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Execution example}
+
+Simple vector addition kernel to illustrate GPU execution.
+
 \begin{minted}[frame=single]{fortran}
 !$omp target teams distribute parallel do
 do i = 1, N
@@ -470,6 +509,9 @@ do i = 1, N
 end do
 !$omp end target teams distribute parallel do
 \end{minted}
+
+Might not work out of the box as we haven't said anything about memory movement.
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
