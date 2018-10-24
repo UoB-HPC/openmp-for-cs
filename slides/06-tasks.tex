@@ -565,7 +565,7 @@ call check_work()
   \item Need to think carefully about the appropriate clauses for each variable.
   \item \mintinline{fortran}|shared(x)|: There is one copy of the \mintinline{fortran}|x| variable, shared between the current and child tasks.
   \item \mintinline{fortran}|private(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is not initialised.
-  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initialised to the value of the original variable in the encountering task region.
+  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initialised to the value of the original variable when \emph{encountered}.
 \end{itemize}
 \end{frame}
 
@@ -577,8 +577,31 @@ call check_work()
   \item By default, data is \emph{shared} for \mintinline{fortran}|parallel| regions.
   \item By default, data is \emph{firstprivate} for \mintinline{fortran}|task| constructs.
   \item Unless, it's shared by the enclosing (the outer) region.
+  \item Sensible behaviour because task execution may be delayed, and original variables may no longer be in scope.
   \item Using \mintinline{fortran}|default(none)| is recommended here especially.
 \end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Data sharing example}
+
+\begin{minted}[frame=single]{fortran}
+!$omp parallel shared(A) private(B)
+
+  !$omp task
+    call compute(A,B)
+  !$omp end task
+
+!$omp end parallel
+\end{minted}
+
+\begin{itemize}
+  \item \mintinline{fortran}|A| is shared.
+  \item \mintinline{fortran}|B| is firstprivate.
+  \item Any variables inside the subroutine are private.
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
