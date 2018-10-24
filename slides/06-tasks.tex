@@ -338,6 +338,7 @@ Three places where tasks synchronise:
     \begin{itemize}
       \item Implicit barriers (like at end of \mintinline{fortran}|parallel| regions).
       \item Explicit \mintinline{fortran}|barrier| constructs.
+      \item \emph{All} previously generated tasks will complete.
     \end{itemize}
   \item At the \mintinline{fortran}|taskwait| construct:
     \begin{itemize}
