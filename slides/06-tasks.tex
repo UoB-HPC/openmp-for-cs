@@ -105,7 +105,7 @@ end do
 
 \begin{alertblock}{Think!}
 
-If you have a regular parallel algorithm, tasks \emph{unlikely} to be the best approach.
+If you have a regular parallel algorithm, tasks are \emph{unlikely} to be the best approach.
 
 \vfill
 
@@ -337,7 +337,7 @@ Three places where tasks synchronise:
 \begin{enumerate}
   \item At thread barriers:
     \begin{itemize}
-      \item Implicit barriers (like at end of \mintinline{fortran}|parallel| regions).
+      \item Implicit barriers (like at end of \mintinline{fortran}|parallel| and \mintinline{fortran}|single| regions).
       \item Explicit \mintinline{fortran}|barrier| constructs.
       \item \emph{All} previously generated tasks will complete.
     \end{itemize}
@@ -350,6 +350,7 @@ Three places where tasks synchronise:
   \item At the end of the \mintinline{fortran}|taskgroup| construct:
     \begin{itemize}
       \item Waits on all child tasks generated within the \mintinline{fortran}|taskgroup| region.
+      \item \emph{Includes} waiting on descendants.
       \item Like \mintinline{fortran}|taskwait|, but allows grouping of child tasks.
     \end{itemize}
 \end{enumerate}
@@ -600,7 +601,7 @@ call check_work()
   \item The \mintinline{fortran}|taskgroup| waits for all the tasks in the group only, \emph{excluding} the background task.
   \item Background task can continue while executing \mintinline{fortran}|check_work()|.
   \vfill
-  \item If used a \mintinline{fortran}|taskwait| before line 14, it would also wait for \emph{background} tasks. Also need to ensure wait on recursive task's descendants.
+  \item If used a \mintinline{fortran}|taskwait| before line 14, it would also wait for the \emph{background} task. Also need to ensure wait on recursive task's descendants.
 \end{itemize}
 \end{column}
 \end{columns}
@@ -628,7 +629,9 @@ call check_work()
   \item Tasks and parallel regions have different default data sharing rules.
   \item By default, data is \emph{shared} for \mintinline{fortran}|parallel| regions.
   \item By default, data is \emph{firstprivate} for \mintinline{fortran}|task| constructs.
-  \item Unless, it's shared by the enclosing (the outer) region.
+  \begin{itemize}
+    \item Unless, it's shared by the enclosing (the outer) region.
+  \end{itemize}
   \item Sensible behaviour because task execution may be delayed, and original variables may no longer be in scope.
   \item Using \mintinline{fortran}|default(none)| is recommended here especially.
 \end{itemize}
@@ -648,6 +651,7 @@ call check_work()
 !$omp end parallel
 \end{minted}
 
+Within the task:
 \begin{itemize}
   \item \mintinline{fortran}|A| is \mintinline{fortran}|shared|.
   \item \mintinline{fortran}|B| is \mintinline{fortran}|firstprivate|.
@@ -973,7 +977,7 @@ Some rare clauses you can use when generating tasks, but unlikely to use them in
   \item Don't use tasks for patterns supported by other parts of OpenMP (parallel loops).
   \item Tasking comes with overheads.
   \item The runtime is good, but can't work miracles.
-  \item Best results obtained where use controls number and granularity of tasks.
+  \item Best results obtained where programmer controls number and granularity of tasks.
 \end{itemize}
 \end{frame}
 
@@ -1052,6 +1056,7 @@ Cray PerfTools
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Resources}
+{\footnotesize
 \begin{itemize}
   \item OpenMP website: \url{https://www.openmp.org}
   \item cOMPunity: \url{http://www.compunity.org}
@@ -1062,6 +1067,7 @@ Cray PerfTools
   \item OpenMPCon'15 Tutorial from Christian Terboven and Michael Klemm: \url{https://openmpcon.org/wp-content/uploads/openmpcon2015-michael-klemm-tasking.pdf}
   \item Patrick Atkinson and Simon McIntosh-Smith, \emph{On the Performance of Parallel Tasking Runtimes for an Irregular Fast Multipole Method Application}, IWOMP 2017. \url{https://link.springer.com/chapter/10.1007/978-3-319-65578-9_7}.
 \end{itemize}
+}
 \end{frame}
 
 %-------------------------------------------------------------------------------
