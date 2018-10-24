@@ -607,7 +607,59 @@ call check_work()
 %-------------------------------------------------------------------------------
 \subsection{Fibonacci example}
 \begin{frame}[fragile]
-\frametitle{Fibonacci}
+\frametitle{Serial Fibonacci}
+
+\begin{minted}[breaklines,frame=single,linenos,fontsize=\footnotesize]{fortran}
+recursive integer function fib(n) result(res)
+  integer :: n, i, j
+  if (n .lt. 2) then
+    res = n
+  else
+    i = fib(n-1)
+    j = fib(n-2)
+
+    res = i+j
+  end if
+end function
+
+program fibonacci
+  integer :: res
+
+  res = fib(40)
+  print *, res
+end program
+\end{minted}
+
+Note: there are better ways to calculate Fibonacci numbers\dots
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Parallel Fibonacci}
+
+Create the parallel region:
+
+\begin{minted}[breaklines,frame=single,linenos,fontsize=\footnotesize]{fortran}
+program fibonacci
+
+  integer :: res
+
+  !$omp parallel
+    !$omp master
+      res = fib(40)
+    !$omp end master
+  !$omp end parallel
+
+  print *, res
+
+end program
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Parallel Fibonacci}
 \begin{columns}
 \begin{column}{0.5\textwidth}
 \begin{minted}[breaklines,frame=single,linenos,fontsize=\small]{fortran}
@@ -629,17 +681,17 @@ end function
 \end{minted}
 \end{column}
 
-\begin{column}{0.5\textwidth}
+\begin{column}{0.6\textwidth}
 \begin{itemize}
-  \item Routine called from a parallel region by one of the threads.
+  \item Recursively creates a binary tree of tasks.
   \item This first task \mintinline{fortran}|fib(40)| creates two tasks: \mintinline{fortran}|fib(39)| and \mintinline{fortran}|fib(38)|.
-  \item \mintinline{fortran}|i| and \mintinline{fortran}|j| must be \mintinline{fortran}|shared| so that the results are retained by the calling task.
   \item The \mintinline{fortran}|taskwait| construct ensures that the child tasks are finished before summing their return values.
+  \item \mintinline{fortran}|i| and \mintinline{fortran}|j| \emph{must} be \mintinline{fortran}|shared| so that the results are retained by the calling task.
+  \item They are local variables so would have been \mintinline{fortran}|firstprivate| for the tasks by default.
 \end{itemize}
 \end{column}
 
 \end{columns}
-NB: there are better ways to calculate Fibonacci numbers\dots
 \end{frame}
 
 %-------------------------------------------------------------------------------
