@@ -1023,7 +1023,15 @@ Plus many others\dots
 \section{Exercise}
 \begin{frame}
 \frametitle{Exercise}
-TODO: Async GPU offload
+
+Asynchronous offload:
+\begin{itemize}
+  \item Start with the \mintinline{fortran}|target| version of the 5-point stencil.
+  \item Use the \mintinline{fortran}|nowait| clause to asynchronously offload part of the computation.
+  \item Complete the remainder of the work on the host in parallel concurrently with the device.
+  \item Ensure correct synchronisation with the tasking constructs.
+\end{itemize}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
