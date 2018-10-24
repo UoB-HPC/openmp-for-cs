@@ -342,8 +342,8 @@ Three places where tasks synchronise:
   \item At the \mintinline{fortran}|taskwait| construct:
     \begin{itemize}
       \item Waits on all child tasks of the current task before continuing.
-      \item Only applies to tasks that the current task generated.
-      \item Everything in OpenMP is defined as task, so here the ``outer'' task is the one that called the first \mintinline{fortran}|task| construct.
+      \item Only applies to tasks that the current task \emph{generated}.
+      \item Everything in OpenMP is defined as task, so here the ``outer/current'' task is the one that called the first \mintinline{fortran}|task| construct.
     \end{itemize}
   \item At the end of the \mintinline{fortran}|taskgroup| construct:
     \begin{itemize}
