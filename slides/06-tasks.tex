@@ -312,32 +312,6 @@ Useful to think about tasks organised as a tree (or graph).
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\subsection{Data sharing clauses}
-\begin{frame}
-\frametitle{Data sharing clauses}
-\begin{itemize}
-  \item Can use these three data sharing clauses from \mintinline{fortran}|parallel| regions on the \mintinline{fortran}|task| construct.
-  \item The definitions are really the same, but applied to tasks, not threads.
-  \item Need to think carefully about the appropriate clauses for each variable.
-  \item \mintinline{fortran}|shared(x)|: There is one copy of the \mintinline{fortran}|x| variable, shared between the current and child tasks.
-  \item \mintinline{fortran}|private(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is not initialised.
-  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initialised to the value of the original variable in the encountering task region.
-\end{itemize}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Default data sharing}
-\begin{itemize}
-  \item Tasks and parallel regions have different default data sharing rules.
-  \item By default, data is \emph{shared} for \mintinline{fortran}|parallel| regions.
-  \item By default, data is \emph{firstprivate} for \mintinline{fortran}|task| constructs.
-  \item Unless, it's shared by the enclosing (the outer) region.
-  \item Using \mintinline{fortran}|default(none)| is recommended here especially.
-\end{itemize}
-\end{frame}
-
-%-------------------------------------------------------------------------------
 \subsection{Task synchronisation}
 \begin{frame}
 \frametitle{Task completion}
@@ -421,6 +395,32 @@ Three places where tasks synchronise:
 \end{column}
 \end{columns}
 
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\subsection{Data sharing clauses}
+\begin{frame}
+\frametitle{Data sharing clauses}
+\begin{itemize}
+  \item Can use these three data sharing clauses from \mintinline{fortran}|parallel| regions on the \mintinline{fortran}|task| construct.
+  \item The definitions are really the same, but applied to tasks, not threads.
+  \item Need to think carefully about the appropriate clauses for each variable.
+  \item \mintinline{fortran}|shared(x)|: There is one copy of the \mintinline{fortran}|x| variable, shared between the current and child tasks.
+  \item \mintinline{fortran}|private(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is not initialised.
+  \item \mintinline{fortran}|firstprivate(x)|: Each task gets its own local \mintinline{fortran}|x| variable. It is initialised to the value of the original variable in the encountering task region.
+\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Default data sharing}
+\begin{itemize}
+  \item Tasks and parallel regions have different default data sharing rules.
+  \item By default, data is \emph{shared} for \mintinline{fortran}|parallel| regions.
+  \item By default, data is \emph{firstprivate} for \mintinline{fortran}|task| constructs.
+  \item Unless, it's shared by the enclosing (the outer) region.
+  \item Using \mintinline{fortran}|default(none)| is recommended here especially.
+\end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
