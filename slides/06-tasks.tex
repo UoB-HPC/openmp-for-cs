@@ -902,7 +902,7 @@ end do
 
 \end{frame}
 %-------------------------------------------------------------------------------
-\subsection{Summary}
+\subsection{Tasking summary}
 \begin{frame}
 \frametitle{Other clauses}
 Some rare clauses you can use when generating tasks, but unlikely to use them in most cases.
@@ -913,6 +913,7 @@ Some rare clauses you can use when generating tasks, but unlikely to use them in
   \item \mintinline{fortran}|final(expr)|: If the expression is true, this and all further child tasks are included in the parent task, and just executed immediately. Useful for specifying a minimum tasks size in recursive algorithms.
 \end{itemize}
 \end{frame}
+
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Tasking advice}
@@ -1046,6 +1047,36 @@ Asynchronous offload:
   \item Complete the remainder of the work on the host in parallel concurrently with the device.
   \item Ensure correct synchronisation with the tasking constructs.
 \end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Summary}
+\begin{frame}
+\frametitle{Summary}
+
+\begin{itemize}
+  \item Covered a lot of content:
+    \begin{itemize}
+      \item Shared memory parallelism with OpenMP.
+      \item Parallelising loops with OpenMP worksharing.
+      \item Code optimisations.
+      \item Performance analysis, including the Roofline model.
+      \item Vectorisation.
+      \item NUMA aware programming.
+      \item Hybrid MPI+OpenMP codes.
+      \item Programming a GPU with OpenMP.
+      \item Task based parallelism with OpenMP.
+    \end{itemize}
+
+  \item Trying the concepts out yourself is the best way of learning a parallel programming model.
+
+  \item OpenMP gives you the tools to write performance portable programs.
+
+  \item The OpenMP standard, runtimes and compilers continune to develop.
+
+\end{itemize}
+
 
 \end{frame}
 
