@@ -71,6 +71,7 @@ Don't forget to copy back the reduction variable.
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\section{Introduction}
 \begin{frame}[fragile]
 \frametitle{The need for tasks}
 \begin{itemize}
@@ -80,6 +81,7 @@ Don't forget to copy back the reduction variable.
   \item Tasking allows you to package work and data into units (tasks) and have them scheduled in parallel.
 \end{itemize}
 
+Example: processing a linked list:
 \begin{minted}[frame=single]{fortran}
 p => head
 do while(associated(p))
@@ -141,7 +143,7 @@ end do
   \item Useful for cases where synchronisation isn't required:
     \begin{itemize}
       \item Printing out messages to the screen.
-      \item Generating tasks!
+      \item {\bf Generating tasks!}
     \end{itemize}
 \end{itemize}
 
@@ -188,7 +190,7 @@ end do
 \begin{itemize}
   \item Use master thread to generate tasks for all threads to do.
   \item Idle threads take tasks off the task queue.
-  \item Barrier at the \mintinline{fortran}|end parallel| ensures all tasks complete.
+  \item Implicit barrier at the \mintinline{fortran}|end parallel| ensures all tasks complete.
 \end{itemize}
 \end{column}
 \end{columns}
