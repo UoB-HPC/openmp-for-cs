@@ -29,6 +29,7 @@
   \end{itemize}
 
   \item Tools
+  \item OpenMP 5.0
 \end{itemize}
 \end{frame}
 
@@ -995,6 +996,29 @@ Cray PerfTools
   \item TotalView debugger: \url{https://computing.llnl.gov/tutorials/totalview/}
 \end{itemize}
 \end{frame}
+
+%-------------------------------------------------------------------------------
+\section{OpenMP 5.0}
+\begin{frame}
+\frametitle{OpenMP 5.0}
+
+Due to be released the week before SC'18.
+
+Highlighted additions:
+\begin{itemize}
+  \item \mintinline{fortran}|mutexinout| dependency.
+  \item Task reductions.
+  \item Scan reduction operations.
+  \item Task affinity hints to say where tasks might execute based on data.
+  \item \mintinline{fortran}|metadirective| and \mintinline{fortran}|declare variant| for selection of directive and function variants based on context.
+  \item Memory space allocators and traits to support different kinds of memories.
+  \item \mintinline{fortran}|loop| construct for compiler optimisation and parallelisation of loops; specifies iterations can execute in any order.
+\end{itemize}
+
+Plus many others\dots
+
+\end{frame}
+
 %-------------------------------------------------------------------------------
 \section{Exercise}
 \begin{frame}
