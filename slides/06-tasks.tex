@@ -401,6 +401,56 @@ end subroutine
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
+\frametitle{Taskwait}
+
+\mintinline{fortran}|!$omp taskwait|: waits for \emph{generated} (child) tasks to finish.
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_a()
+  !$omp task
+  call do_b()
+  !$omp end task
+
+  !$omp task
+  call do_c()
+  !$omp end task
+end subroutine
+
+subroutine do_b()
+  !$omp task
+  call do_d()
+  !$omp end task
+
+  !$omp task
+  call do_e()
+  !$omp end task
+end subroutine
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\small]{bash}
+$ OMP_NUM_THREADS=4 ./tasks
+ Task A starting
+ Task A finished
+ Task C starting
+ Task B starting
+ Task C finished
+ Task B finished
+ Task D starting
+ Task E starting
+ Task E finished
+ Task D finished
+\end{minted}
+Tasks finish even when child tasks haven't started.
+\end{column}
+
+\end{columns}
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
 \frametitle{Taskwait: usage}
 
 \begin{itemize}
@@ -428,16 +478,18 @@ end subroutine
 \end{column}
 
 \begin{column}{0.5\textwidth}
-\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
-subroutine do_b()
-  !$omp task
-  call do_d()
-  !$omp end task
-
-  !$omp task
-  call do_e()
-  !$omp end task
-end subroutine
+\begin{minted}[frame=single,fontsize=\small]{bash}
+$ OMP_NUM_THREADS=4 ./tasks
+ Task A starting
+ Task B starting
+ Task C starting
+ Task B finished
+ Task C finished
+ Task D starting
+ Task A finished
+ Task E starting
+ Task D finished
+ Task E finished
 \end{minted}
 \end{column}
 
@@ -449,29 +501,12 @@ end subroutine
 \frametitle{Taskwait: usage}
 
 \begin{itemize}
-  \item A \mintinline{fortran}|taskwait| also in Task B will ensure Task B waits for Tasks D and E to finish before finishing itself.
+  \item A \mintinline{fortran}|taskwait| \emph{also} in Task B will ensure Task B waits for Tasks D and E to finish before finishing itself.
   \item Task A waits for Tasks B to finish, which is waiting for Tasks D and E to finish.
   \item So Task A will now finish when Tasks B, C, D and E are finished.
 \end{itemize}
 
 \begin{columns}
-\begin{column}{0.5\textwidth}
-\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
-subroutine do_a()
-  !$omp task
-  call do_b()
-  !$omp end task
-
-  !$omp task
-  call do_c()
-  !$omp end task
-
-  !$omp taskwait
-end subroutine
-
-\end{minted}
-\end{column}
-
 \begin{column}{0.5\textwidth}
 \begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
 subroutine do_b()
@@ -485,6 +520,22 @@ subroutine do_b()
 
   !$omp taskwait
 end subroutine
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\small]{bash}
+$ OMP_NUM_THREADS=4 ./tasks
+ Task A starting
+ Task B starting
+ Task C starting
+ Task E starting
+ Task D starting
+ Task C finished
+ Task E finished
+ Task D finished
+ Task B finished
+ Task A finished
 \end{minted}
 \end{column}
 
