@@ -223,6 +223,52 @@ Useful to think about tasks organised as a tree (or graph).
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Trees}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+!$omp parallel
+  !$omp master
+    !$omp task
+    call do_task(x,y,z)
+    !$omp end task
+
+    !$omp task
+    call do_task(i,j,k)
+    !$omp end task
+  !$omp end master
+!$omp end parallel
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
+  \node<2-> (it) {Initial Task};
+  \node<3-> (t1) [below=of it, xshift=-1.5cm] {Task T0} edge [<-] (it);
+  \node<3-> (t2) [below=of it, xshift=1.5cm] {Task T1} edge [<-] (it);
+  \node<4-> (t3) [below=of t1, xshift=1.4cm, yshift=0.7cm] {Task \mintinline{fortran}|(x,y,z)|} edge [<-] (t1);
+  \node<4-> (t4) [below=of t1, xshift=-0.5cm] {Task \mintinline{fortran}|(i,j,k)|} edge [<-] (t1);
+
+  \node<3-> [draw,dotted,fit=(t1) (t2) (t3) (t4)] {};
+  \node<4-> [draw,dotted,fit=(t3) (t4)] {};
+
+\end{tikzpicture}
+\end{column}
+\end{columns}
+
+\begin{enumerate}
+  \item<2-> Initial thread begins serial execution.
+  \item<3-> Parallel region encountered, implicit task generated per thread.
+  \item<4-> Master thread T0 generates tasks. Tasks are \emph{children} of T0, and \emph{siblings} of each other.
+  \item<5-> When Tasks T0 and T1 are done they reach the implicit barrier. Threads free to execute other tasks.
+  \item<6-> Initial task resumes after implicit barrier at \mintinline{fortran}|end parallel|.
+\end{enumerate}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Under the hood}
 \begin{itemize}
