@@ -492,33 +492,62 @@ end subroutine
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Taskgroup}
+
+\begin{itemize}
+  \item Similar to \mintinline{fortran}|taskwait| but also waits on children of child tasks.
+  \item Creates a set of tasks containing \emph{all} generated tasks, including descendants, in the region.
+  \item Encountering task suspended until all the tasks in the set complete.
+\end{itemize}
+
+\begin{minted}[frame=single]{fortran}
+!$omp taskgroup
+
+  ! Generate some tasks...
+
+!$omp end taskgroup
+
+! Here, all tasks generated in the taskgroup region
+! have finished
+
+\end{minted}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Taskgroup: usage}
+
 \begin{columns}
-\begin{column}{.5\textwidth}
-\begin{minted}[frame=single,linenos]{fortran}
+\begin{column}{.4\textwidth}
+\begin{minted}[frame=single,linenos,fontsize=\small]{fortran}
 !$omp parallel
-!$omp master
+!$omp single
+
+!$omp task
+call background_work()
+!$omp end task
+
+!$omp taskgroup
   !$omp task
-  call background_task()
+  call recursive_work()
   !$omp end task
+!$omp end taskgroup
 
-  !$omp taskgroup
-    !$omp task
-    call recursive_task()
-    !$omp end task
-  !$omp end taskgroup
+call check_work()
 
-!$omp end master
+!$omp end single
 !$omp end parallel
 \end{minted}
 \end{column}
 
-\begin{column}{.5\textwidth}
+\begin{column}{.6\textwidth}
 \begin{itemize}
-  \item Start a background task.
-  \item The \mintinline{fortran}|recursive_task()| will generate many more tasks.
-  \item All these tasks are children of the master task.
-  \item A \mintinline{fortran}|taskwait| on line 11 would wait for \emph{all the tasks}, including the background task.
-  \item The \mintinline{fortran}|taskgroup| waits for all the tasks in the group only, not including the background task.
+  \item Using \mintinline{fortran}|single| region to generate tasks, which has implicit barrier.
+  \item Start a background task, and perform a recursive task which generates more tasks.
+  \item The \mintinline{fortran}|taskgroup| waits for all the tasks in the group only, \emph{excluding} the background task.
+  \item Background task can continue while executing \mintinline{fortran}|check_work()|.
+  \vfill
+  \item If used a \mintinline{fortran}|taskwait| before line 14, it would also wait for \emph{background} tasks. Also need to ensure wait on recursive task's descendants.
 \end{itemize}
 \end{column}
 \end{columns}
