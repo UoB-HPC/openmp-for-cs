@@ -354,27 +354,138 @@ Three places where tasks synchronise:
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Taskwait: back to the tree}
+\begin{frame}[fragile]
+\frametitle{Taskwait}
+
+\mintinline{fortran}|!$omp taskwait|: waits for \emph{generated} tasks to finish.
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
-\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
-  \node (it) {Initial Task};
-  \node (t1) [below=of it, xshift=-1cm] {Task A} edge [<-] (it);
-  \node (t2) [below=of it, xshift=1cm] {Task B} edge [<-] (it);
-  \node (t3) [below=of t1, xshift=-1cm] {Task C} edge [<-] (t1);
-  \node (t4) [below=of t1, xshift=1cm] {Task D} edge [<-] (t1);
-\end{tikzpicture}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_a()
+  !$omp task
+  call do_b()
+  !$omp end task
+
+  !$omp task
+  call do_c()
+  !$omp end task
+end subroutine
+
+subroutine do_b()
+  !$omp task
+  call do_d()
+  !$omp end task
+
+  !$omp task
+  call do_e()
+  !$omp end task
+end subroutine
+\end{minted}
 \end{column}
 
 \begin{column}{0.5\textwidth}
-\begin{itemize}
-  \item A \mintinline{fortran}|taskwait| in the Initial Task will wait for Task A and B to finish. Task A finishes when Tasks C and D are also finished.
-  \item A \mintinline{fortran}|taskwait| in Task A will wait for Tasks C and D to finish.
-  \item A \mintinline{fortran}|taskwait| in Task B will do nothing (no children).
-\end{itemize}
+\begin{tikzpicture}[every node/.style = {shape=rectangle, draw}]
+  \node (it) {Task A};
+  \node (t1) [below=of it, xshift=-1cm] {Task B} edge [<-] (it);
+  \node (t2) [below=of it, xshift=1cm] {Task C} edge [<-] (it);
+  \node (t3) [below=of t1, xshift=-1cm] {Task D} edge [<-] (t1);
+  \node (t4) [below=of t1, xshift=1cm] {Task E} edge [<-] (t1);
+\end{tikzpicture}
 \end{column}
+
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Taskwait: usage}
+
+\begin{itemize}
+  \item A \mintinline{fortran}|taskwait| in Task A will wait for Tasks B and C to finish.
+  \item Task B finishes when Tasks D and E have been \emph{generated}, not completed.
+  \item So this \mintinline{fortran}|taskwait| \emph{will not} wait for Tasks D and E to finish.
+\end{itemize}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_a()
+  !$omp task
+  call do_b()
+  !$omp end task
+
+  !$omp task
+  call do_c()
+  !$omp end task
+
+  !$omp taskwait
+end subroutine
+
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_b()
+  !$omp task
+  call do_d()
+  !$omp end task
+
+  !$omp task
+  call do_e()
+  !$omp end task
+end subroutine
+\end{minted}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Taskwait: usage}
+
+\begin{itemize}
+  \item A \mintinline{fortran}|taskwait| also in Task B will ensure Task B waits for Tasks D and E to finish before finishing itself.
+  \item Task A waits for Tasks B to finish, which is waiting for Tasks D and E to finish.
+  \item So Task A will now finish when Tasks B, C, D and E are finished.
+\end{itemize}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_a()
+  !$omp task
+  call do_b()
+  !$omp end task
+
+  !$omp task
+  call do_c()
+  !$omp end task
+
+  !$omp taskwait
+end subroutine
+
+\end{minted}
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
+subroutine do_b()
+  !$omp task
+  call do_d()
+  !$omp end task
+
+  !$omp task
+  call do_e()
+  !$omp end task
+
+  !$omp taskwait
+end subroutine
+\end{minted}
+\end{column}
+
 \end{columns}
 \end{frame}
 
