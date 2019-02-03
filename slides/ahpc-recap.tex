@@ -16,8 +16,8 @@
 
 Turn on OpenMP in the compiler:
 \begin{minted}{bash}
-gfortran *.f90 -fopenmp # GNU
-ifort *.f90 -qopenmp    # Intel
+gcc *.c -fopenmp   # GNU
+icc *.c -qopenmp   # Intel
 \end{minted}
 
 To also use the API calls within the code, include the library header:
@@ -139,7 +139,7 @@ Nested threads are allowed, where a thread forks its own team of threads.
 int main(void) {
 
 #pragma omp parallel
-  printf("%s\n", "Hello");
+  printf("Hello\n");
 
 }
 \end{minted}
@@ -158,7 +158,7 @@ Parallel region defined by structured block of code.
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Setting number of threads}
-You might need to set the number of threads to launch (though typically you'll leave OpenMP to set the number of threads for you at run-time).
+The recommended approach is to let OpenMP set the number of threads for you at run-time. However, it is possible to set the number of threads to launch yourself. Useful for scaling tests etc.
 
 OpenMP has 3 ways to do this:
 \begin{itemize}
@@ -210,15 +210,15 @@ The OpenMP API gives you calls to determine thread information when \emph{inside
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Vector add example}
-Add parallel region around work, and use worksharing constructs to share iterations between threads.
+Add parallel region around work, and use {\bf worksharing} constructs to distribute iterations across threads.
 \begin{minted}[frame=single]{c}
   #pragma omp parallel for
   for (int i = 0; i < N; ++i) {
-    C(i) = A(i) + B(i)
+    c[i] = a[i] + b[i];
   }
 \end{minted}
 \begin{itemize}
-  \item This starts a parallel region, forking some threads.
+  \item This starts a parallel region, forking a team of threads.
   \item Each thread then gets a portion of the iteration space and computes the loop body in parallel.
   \item Implicit synchronisation point at the end of loop.
   \item Threads finally join again; later code executes sequentially.
@@ -258,8 +258,8 @@ schedule(static,16)
 \end{minted}
 
 \begin{itemize}
-\item Static schedule divides iterations into chunks and assigns chunks to threads in round-robin.
-\item If no chunk size specified, iteration space divided roughly equally.
+\item Static schedule divides iterations into chunks and assigns chunks to threads in a round-robin way.
+\item If no chunk size is specified (the default), the iteration space is divided roughly equally across the threads.
 \end{itemize}
 For our example loop:
 \begin{columns}
@@ -285,8 +285,8 @@ For our example loop:
   \midrule
   0 &  0--15, 64--79 \\
   1 & 16--31, 80--95 \\
-  2 & 32--49, 96--99 \\
-  3 & 50--63 \\
+  2 & 32--47, 96--99 \\
+  3 & 48--63 \\
   \bottomrule
   \end{tabular}
 \end{column}
@@ -306,12 +306,12 @@ schedule(dynamic,16)
   \item Iteration space is divided into chunks according to chunk size.
   \item If no chunk size specified, default size is one.
   \item Each thread requests and executes a chunk, until no more chunks remain.
-  \item Useful for unbalanced work-loads if some threads complete work faster.
+  \item Useful for unbalanced work-loads if some threads complete work faster than others.
 \end{itemize}
 
 For our example with a chunk size of 16:
 \begin{itemize}
-  \item The iteration space is split into chunk of 16 (the last chunk may be smaller).
+  \item The iteration space is split into chunks of 16 (the last chunk may be smaller).
   \item Each threads gets one chunk, then requests a new chunk to work on.
 \end{itemize}
 
@@ -326,7 +326,7 @@ schedule(guided,16)
 \end{minted}
 
 \begin{itemize}
-  \item Similar to assignment to dynamic, except the chunk size decreases over time.
+  \item Similar to dynamic, except the chunk size decreases over time.
   \item Granularity of work chunks gets finer over time.
   \item If no chunk size is specified, the default size is one.
   \item Useful to try to mitigate overheads of a \mintinline{c}|dynamic| schedule by starting with large chunks of work.
@@ -360,7 +360,7 @@ schedule(runtime)
 \end{itemize}
 
 \begin{block}{Recommendation}
-Just use a \mintinline{c}|static| schedule unless there is a good reason not to!
+Use a \mintinline{c}|static| schedule unless there is a good reason not to!
 \mintinline{c}|static| is usually the fastest of all the options.
 The choice of schedules is an advanced tuning option.
 \end{block}
@@ -372,7 +372,7 @@ The choice of schedules is an advanced tuning option.
 \begin{frame}[fragile]
 \frametitle{The nowait clause}
 \begin{itemize}
-  \item May have series of loops in your code which are independent.
+  \item Consider a series of independent loops.
   \item Threads must wait/synchronise at the end of the loop.
   \item But it might be possible to delay this synchronisation using the \mintinline{c}|nowait| clause.
   \item When a thread finishes the first loop, it starts on the next loop.
@@ -428,6 +428,7 @@ You must specify which data should be \emph{private} to each thread.
 \begin{alertblock}{Caution}
 Setting a data sharing clause on a heap variable only effects the metadata of the variable.
 The pointer could be private, but the target will still be shared.
+\textit{This is a common source of bugs.}
 \end{alertblock}
 \end{frame}
 
@@ -453,7 +454,7 @@ These are the most common clauses that are needed.
 \subsection{Private example}
 \begin{frame}[fragile]
 \frametitle{Private example}
-Simple \mintinline{c}|for| loop, which just sets a variable to the iteration number.
+Simple \mintinline{c}|for| loop, which sets a variable to the iteration number.
 Each iteration prints out the current and next value of \mintinline{c}|x|, along with the thread number.
 Will see what happens with different data sharing clauses.
 
@@ -550,7 +551,7 @@ On exiting the region, the original \mintinline{c}|x| is set to the value of the
 \section{Reductions}
 \begin{frame}[fragile]
 \frametitle{Reductions}
-Loops often have a reduction operation: a value from each iteration is combined to a single value.
+Loops often have a reduction operation: a value from each iteration is combined into a single value.
 To do this in parallel in OpenMP, use the \mintinline{c}|reduction| clause on a worksharing loop.
 Specify the operation and the variable.
 \begin{multicols}{2}
@@ -583,12 +584,13 @@ MPI_Allreduce(MPI_IN_PLACE, arr, N, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierr
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Pi reduction}
-Much simpler to write using the \mintinline{c}|reduction| clause --- just need a single directive:
+Much simpler to write using the \mintinline{c}|reduction| clause ---  needs a single directive:
 \begin{minted}[linenos,breaklines,frame=single]{c}
+  sum = 0.0;
   step = 1.0/num_steps;
   #pragma omp parallel for private(x) reduction(+:sum)
-  for (int ii = 1; i <= num_steps; ++i) {
-    x = (ii-0.5)*step;
+  for (int i = 1; i <= num_steps; ++i) {
+    x = (i-0.5)*step;
     sum = sum + (4.0/(1.0+x*x));
   }
   pi = step * sum;
@@ -629,7 +631,7 @@ Recall this cartoon of a dual-socket, shared memory system:
 \end{tikzpicture}
 \end{center}
 
-\emph{All} threads (each running on a core) can access the same memory.
+\emph{All} threads (each running on a core) can access all the memory in the node.
 
 \end{frame}
 %-------------------------------------------------------------------------------
@@ -732,7 +734,7 @@ for (int i = 0; i < N; ++i) {
   \item Parallelise your initialisation routines the same way you parallelise the main loops.
   \item This means each thread touches the same data in initialisation and compute.
   \item Should reduce the number of remote memory accesses needed and improve run times.
-  \item But, OS is allowed to move threads around cores, and between sockets.
+  \item But, the OS is allowed to move threads from one core to another, and even between sockets.
   \item This will mess up your NUMA aware code!
 \end{itemize}
 \end{frame}
@@ -746,7 +748,7 @@ for (int i = 0; i < N; ++i) {
   \item Exposed as \emph{places} and \emph{thread pinning policy} to those places.
   \item By default there is one place consisting of all the cores.
   \item Use the \mintinline{bash}|OMP_PROC_BIND| environment variable to set pinning for all \mintinline{c}|parallel| regions.
-  \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but advise against this.
+  \item Can use the \mintinline{bash}|proc_bind| clause for control of specific regions, but we advise against this.
 \end{itemize}
 \end{frame}
 
@@ -783,7 +785,7 @@ for (int i = 0; i < N; ++i) {
 \begin{frame}
 \frametitle{Thread pinning summary}
 \begin{itemize}
-  \item In general, going to want to just use \mintinline{bash}|OMP_PROC_BIND=true|.
+  \item In general, going to want to use \mintinline{bash}|OMP_PROC_BIND=true|.
   \item Sometimes \mintinline{bash}|spread| or \mintinline{bash}|close| gets better performance.
   \item Pinning rules can get complicated when there are multiple places, so prefer to use the predefined values.
   \item Most effective with a NUMA-aware implementation.
