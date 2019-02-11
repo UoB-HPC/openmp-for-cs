@@ -362,7 +362,7 @@ schedule(runtime)
 \begin{block}{Recommendation}
 Use a \mintinline{c}|static| schedule unless there is a good reason not to!
 \mintinline{c}|static| is usually the fastest of all the options.
-The choice of schedules is an advanced tuning option.
+The choice of schedule is an advanced tuning option.
 \end{block}
 
 \end{frame}
@@ -685,6 +685,33 @@ Recall this cartoon of a dual-socket, shared memory system:
 \end{frame}
 
 %-------------------------------------------------------------------------------
+
+\subsection{NUMA on BCp3}
+\begin{frame}[fragile]
+\frametitle{NUMA on BCp3}
+You can discover the NUMA configuration of any Linux node with \mintinline{bash}|numactl --hardware|.
+
+
+\begin{minted}[fontsize=\footnotesize,frame=single]{shell-session}
+[cssnmis@newblue4 ~]$ numactl --hardware
+available: 2 nodes (0-1)
+node 0 cpus: 0 2 4 6 8 10 12 14
+node 0 size: 65490 MB
+node 0 free: 41698 MB
+node 1 cpus: 1 3 5 7 9 11 13 15
+node 1 size: 65536 MB
+node 1 free: 35397 MB
+node distances:
+node   0   1 
+  0:  10  20 
+  1:  20  10 
+\end{minted}
+
+\end{frame}
+
+
+
+%-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Memory allocation}
 \begin{itemize}
@@ -693,24 +720,58 @@ Recall this cartoon of a dual-socket, shared memory system:
   \item Allocating memory does not necessarily allocate memory!
   \item Memory is allocated when it's first used (i.e. \mintinline{c}|A[i] = 1.0;|), one \emph{page} at a time.
   \item OS tends to use a \emph{first touch policy}.
-  \item Memory is allocated in the closest NUMA region to the thread that first touches the data.
+  \item Memory is allocated in the closest NUMA region to the thread that first touches the data (page by page).
   \item Ideally want threads to use data in local NUMA region to reduce socket-to-socket interconnect transfers.
 \end{itemize}
 \end{frame}
 
 %-------------------------------------------------------------------------------
+
+
 \subsection{First touch}
 \begin{frame}[fragile]
 \frametitle{Taking advantage of first touch}
 Parallelising your data initialisation routine might mean your main loops go faster!
 
 
-\begin{minted}[fontsize=\footnotesize,linenos,frame=single]{c}
+%\begin{minted}[fontsize=\footnotesize,linenos,frame=single]{c}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\scriptsize]{c}
 // Allocate and initialise vectors
 double *A = malloc(sizeof(double) * N);
 double *B = malloc(sizeof(double) * N);
 double *C = malloc(sizeof(double) * N);
 
+// Arrays A, B and C all initialised serially, by core 0 in NUMA region 0
+
+for (int i = 0; i < N; ++i) {
+  A[i] = 1.0;
+  B[i] = 2.0;
+  C[i] = 0.0;
+}
+
+// Vector add
+#pragma omp parallel for
+for (int i = 0; i < N; ++i) {
+  C[i] = A[i] + B[i];
+}
+\end{minted}
+
+\end{frame}
+
+\subsection{First touch}
+\begin{frame}[fragile]
+\frametitle{Taking advantage of first touch}
+Parallelising your data initialisation routine might mean your main loops go faster!
+
+
+%\begin{minted}[fontsize=\footnotesize,linenos,frame=single]{c}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\scriptsize]{c}
+// Allocate and initialise vectors
+double *A = malloc(sizeof(double) * N);
+double *B = malloc(sizeof(double) * N);
+double *C = malloc(sizeof(double) * N);
+
+// Arrays A, B and C all initialised in parallel, ending up spread across the NUMA regions
 #pragma omp parallel for
 for (int i = 0; i < N; ++i) {
   A[i] = 1.0;
@@ -760,9 +821,9 @@ for (int i = 0; i < N; ++i) {
   \item \mintinline{bash}|OMP_PROC_BIND=true|: Threads won't move, and follow \mintinline{fortran}|proc_bind| clauses or else the implementation default pinning.
   \item \mintinline{bash}|OMP_PROC_BIND=master|: Threads pinned to same place as master thread.
   \item \mintinline{bash}|OMP_PROC_BIND=close|: Threads are assigned to places close to the master thread.
-  If \mintinline{bash}|OMP_NUM_THREADS.eq.ncores|: thread 0 will pin to core 0; thread 1 will pin to core 1; etc
+  If \mintinline{bash}|OMP_NUM_THREADS==ncores|: thread 0 will pin to core 0; thread 1 will pin to core 1; etc
   \item \mintinline{bash}|OMP_PROC_BIND=spread|: Threads are assigned to places ``sparsely''.
-  If \mintinline{bash}|OMP_NUM_THREADS.eq.ncores|: thread 0 will pin to socket 0 core 0; thread 1 will pin to socket 1 core 0; thread 2 will pin to socket 0 core 1; etc.
+  If \mintinline{bash}|OMP_NUM_THREADS==ncores|: thread 0 will pin to socket 0 core 0; thread 1 will pin to socket 1 core 0; thread 2 will pin to socket 0 core 1; etc.
 \end{itemize}
 \end{frame}
 
@@ -795,4 +856,38 @@ for (int i = 0; i < N; ++i) {
 \end{frame}
 
 %-------------------------------------------------------------------------------
+
+\begin{frame}
+\frametitle{Further reading}
+\begin{itemize}
+  \item NUMA: \url{https://www.thegeekdiary.com/what-is-numa-and-how-does-it-work-in-linux/}
+  \item Linux first touch: \url{https://www.kernel.org/doc/html/v4.18/vm/numa.html?highlight=numa}
+  \item Page migration: \url{https://www.kernel.org/doc/html/v4.18/vm/page_migration.html}
+\end{itemize}
+
+
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Hints on serial optimisations}
+\begin{itemize}
+  \item Compiler optimisation (-Ofast et al)
+  \item Simplify the expressions being calculated (help the compiler)
+  \item Loop fusion (merge multiple passes over the grid into one)
+  \item Remove redundant copy from \mintinline{C}|tmp_cell[]| to \mintinline{C}|cells[]| (pointer swap)
+\end{itemize}
+Once you have all those working
+\begin{itemize}
+  \item Vectorisation (may need AoS to SoA transformation)
+  \item Results in about another 2.5X, e.g. 22s $\rightarrow$ 8s for 128x128
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+
+
+
 \end{document}
