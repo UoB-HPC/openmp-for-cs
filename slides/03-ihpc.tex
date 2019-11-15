@@ -506,21 +506,27 @@ Any thread can call MPI whenever it likes. The \mintinline{c}|MPI_THREAD_MULTIPL
 \begin{frame}[fragile]
 \frametitle{Hybrid jobs in SLURM}
 
-SLURM queueing system makes it straightforward to run hybrid jobs.
+Intel and SLURM make it straightforward to run hybrid jobs, but need to use \mintinline{bash}|mpirun| not \mintinline{bash}|srun|.
 
-\begin{minted}[frame=single]{bash}
+\begin{minted}[fontsize=\footnotesize,frame=single]{bash}
 #!/bin/bash
 
 # Number of nodes to use
 #SBATCH --nodes 2
 
 # Number of MPI ranks (e.g one per socket)
-#SBATCH --ntasks 4
+#SBATCH --ntasks-per-node 2
 
 # Number of OpenMP threads per MPI rank
 #SBATCH --cpus-per-task 14
 
-srun ./a.out
+unset I_MPI_PMI_LIBRARY
+
+export OMP_NUM_THREADS=14 
+export OMP_PROC_BIND=close
+
+mpirun -n 4 ./xthi
+
 \end{minted}
 
 \end{frame}
