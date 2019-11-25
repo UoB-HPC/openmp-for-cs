@@ -415,7 +415,7 @@ Be careful with your index calculation.
   {
     #pragma omp for
     for (i = 0; i < N; ++i) {
-      C(i) = A(i) + B(i);
+      C[i] = A[i] + B[i];
     } // End of for loop
   } // End of parallel region
 \end{minted}
@@ -475,7 +475,7 @@ Next time: the rest of the OpenMP common core.
 \end{itemize}
 Next slides go through the options, using the following loop as an example:
 \begin{minted}[frame=single]{c}
-#pragma omp parallel do num_threads(4)
+#pragma omp parallel for num_threads(4)
 for (int i = 0; i < 100; ++i) {
   ... // loop body
 }
@@ -545,8 +545,8 @@ schedule(dynamic,16)
 
 For our example with a chunk size of 16:
 \begin{itemize}
-  \item The iteration space is split into chunk of 16 (the last chunk may be smaller).
-  \item Each threads gets one chunk, then requests a new chunk to work on.
+  \item The iteration space is split into chunks of 16 (the last chunk may be smaller).
+  \item Each thread gets one chunk, then requests a new chunk to work on.
 \end{itemize}
 
 \end{frame}
@@ -560,7 +560,7 @@ schedule(guided,16)
 \end{minted}
 
 \begin{itemize}
-  \item Similar to assignment to dynamic, except the chunk size decreases over time.
+  \item Similar to dynamic, except the chunk size decreases over time.
   \item Granularity of work chunks gets finer over time.
   \item If no chunk size is specified, the default size is one.
   \item Useful to try to mitigate overheads of a \mintinline{c}|dynamic| schedule by starting with large chunks of work.
@@ -650,15 +650,15 @@ More on this when we talk about vectorisation in a later session.
 \begin{minted}[fontsize=\small, linenos, frame=single]{c}
 #pragma omp parallel
 {
-#pragma omp for nowait
-for (int i = 0; i < N; ++i) {
-  A[i] = i;
-} // No barrier!
+  #pragma omp for nowait
+  for (int i = 0; i < N; ++i) {
+    A[i] = i;
+  } // No barrier!
 
-#pragma omp for
-for (int i = 0; i < N; ++i) {
-  B[i] = i;
-} // Implicit barrier
+  #pragma omp for
+  for (int i = 0; i < N; ++i) {
+    B[i] = i;
+  } // Implicit barrier
 } // Implicit barrier
 \end{minted}
 \end{frame}
