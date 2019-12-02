@@ -235,7 +235,7 @@ Parallelising your data initialisation routine might mean your main loops go fas
 
 
 \begin{minted}[fontsize=\small,linenos,frame=single]{c}
-! Allocate and initialise vectors
+// Allocate and initialise vectors
 double * A = malloc(sizeof(double)*N);
 #pragma omp parallel for
 for (int i = 0; i < n; ++i) {
