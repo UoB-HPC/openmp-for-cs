@@ -1,5 +1,5 @@
 
-all: 00-prelim.pdf 01-paralleldo.pdf 02-pi.pdf 03-opt.pdf 04-hybrid.pdf 05-gpu.pdf 06-tasks.pdf
+all: 00-prelim.pdf 01-paralleldo.pdf 02-pi.pdf 03-simd-numa.pdf 05-gpu.pdf 07-wrapup.pdf 99-isambard.pdf
 
 %.pdf:%.tex preamble.tex
 	latexmk -pdf -shell-escape $<

@@ -1,0 +1,46 @@
+\documentclass[aspectratio=169]{beamer}
+
+\input{preamble.tex}
+
+\title{OpenMP for Computational Scientists}
+\subtitle{Using Isambard}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%-------------------------------------------------------------------------------
+
+\begin{frame}
+\frametitle{Using Isambard (1)}
+\begin{enumerate}
+\item Go to this webpage to get your account ID (01, 02, ...): \url{https://tinyurl/openmp-2020}
+\item Log into the Isambard \emph{bastion} node (the gateway to the system)\newline
+\mintinline{bash}|ssh br-trainXX@isambard.gw4.ac.uk|
+\item Password: \mintinline{bash}|openmpUG20|
+\item From the bastion node, log in to Isambard Phase 1\newline
+\mintinline{bash}|ssh phase1|
+\item Change to the directory containing the exercises\newline
+\mintinline{bash}|cd openmp-for-cs|
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Using Isambard (2)}
+\begin{enumerate}
+\setcounter{enumi}{5}
+\item Build the exercises\newline
+\mintinline{bash}|make|
+\item Submit a job\newline
+\mintinline{bash}|qsub submit_stencil|
+\item Check job status\newline
+\mintinline{bash}|qstat -u $USER|
+\item Check job output\newline
+\mintinline{bash}|cat stencil.o9748|
+
+\end{enumerate}
+
+\end{frame}
+
+\end{document}

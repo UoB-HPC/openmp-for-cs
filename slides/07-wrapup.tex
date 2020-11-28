@@ -1,0 +1,93 @@
+\documentclass[aspectratio=169]{beamer}
+
+\input{preamble.tex}
+
+\title{OpenMP for Computational Scientists}
+\subtitle{Wrap up}
+
+\begin{document}
+
+\frame{\titlepage}
+
+%-------------------------------------------------------------------------------
+
+\begin{frame}
+\frametitle{OpenMP 5.0}
+OpenMP 5 adds features to make writing performance portable programs simpler.
+
+Highlighting some applicable to target:
+\begin{itemize}
+\item Loop construct
+\item Mappers
+\item Unified Shared Memory (USM)
+\item Function variants
+\item Reverse offload
+\item \mintinline{fortran}|OMP_TARGET_OFFLOAD|
+\item Reduction variables now implicitly \mintinline{fortran}|map(tofrom)|
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{Loop}
+\begin{itemize}
+\item Assert that the iterations in a loop nest may execute in any order, including concurrently
+\item Let the compiler figure our how to best utilize parallel resources
+\end{itemize}
+
+\begin{minted}[]{fortran}
+!$omp target
+!$omp loop
+do i = 1, N
+  a(i) = b(i)
+end do
+!$omp end loop
+!$omp end target
+\end{minted}
+
+\end{frame}
+%-------------------------------------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Unified shared memory}
+Code requires specific features, e.g. shared memory between host and devices.
+
+\begin{minted}[]{fortran}
+
+real(kind=8), dimension(:), allocatable :: A
+allocate(A(1024))
+
+!$omp requires unified_shared_memory
+
+!$omp target
+  call do_something_with_A(A)
+!$omp end target
+\end{minted}
+
+No map clauses. Data is shared between the host and device.
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{OpenMP resources}
+\begin{itemize}
+\item Two brilliant books from MIT Press:
+\begin{itemize}
+\item The OpenMP Common Core: Making OpenMP Simple Again --- Tim Mattson, Yun (Helen) Ye and Alice Koniges.
+\item Using OpenMP - The Next Steps --- Ruud van de Pas, Eric Stotzer and Christian Terboven.
+\end{itemize}
+ \item OpenMP website: \url{https://www.openmp.org}
+   \begin{itemize}
+     \item The specification (not for the faint hearted).
+     \item Download summary cards.
+     \item List of compiler support.
+     \item Example code for all the directives.
+     \item List of books: \url{https://www.openmp.org/resources/openmp-books/}
+   \end{itemize}
+ 
+\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------
+\end{document}
