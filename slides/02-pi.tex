@@ -1,9 +1,9 @@
-\documentclass{beamer}
+\documentclass[aspectratio=169]{beamer}
 
 \input{preamble.tex}
 
 \title{OpenMP for Computational Scientists}
-\subtitle{2: The Pi program}
+\subtitle{2: Data sharing and Reductions}
 
 \begin{document}
 
@@ -11,53 +11,53 @@
 
 %-------------------------------------------------------------------------------
 
-\section{Outline}
-\begin{frame}
-\frametitle{Outline}
-\begin{itemize}
-  \item Recap
-  \item Data sharing clauses
-  \item The Pi program
-  \item Critical regions
-  \item Atomics
-  \item False sharing issues
-  \item Reductions
-\end{itemize}
-\end{frame}
+% \section{Outline}
+% \begin{frame}
+% \frametitle{Outline}
+% \begin{itemize}
+%   \item Recap
+%   \item Data sharing clauses
+%   \item The Pi program
+%   \item Critical regions
+%   \item Atomics
+%   \item False sharing issues
+%   \item Reductions
+% \end{itemize}
+% \end{frame}
 %-------------------------------------------------------------------------------
-\section{Recap}
-\begin{frame}[fragile]
-\frametitle{Recap}
-\begin{itemize}
-  \item Fork/join execution model.
+% \section{Recap}
+% \begin{frame}[fragile]
+% \frametitle{Recap}
+% \begin{itemize}
+%   \item Fork/join execution model.
 
-  \item Shared memory model:
-    \begin{itemize}
-      \item All threads can read/write the \emph{same} memory.
-    \end{itemize}
+%   \item Shared memory model:
+%     \begin{itemize}
+%       \item All threads can read/write the \emph{same} memory.
+%     \end{itemize}
 
-  \item Set number of threads with \mintinline{bash}|OMP_NUM_THREADS| environment variable.
+%   \item Set number of threads with \mintinline{bash}|OMP_NUM_THREADS| environment variable.
 
-  \item Parallelise simple loops with worksharing clauses:
-  \begin{minted}[frame=single]{fortran}
-  !$omp parallel do
-  do i = 1, N
-    A(i) = ...
-  end do
-  !$omp end parallel do
-  \end{minted}
+%   \item Parallelise simple loops with worksharing clauses:
+%   \begin{minted}[frame=single]{fortran}
+%   !$omp parallel do
+%   do i = 1, N
+%     A(i) = ...
+%   end do
+%   !$omp end parallel do
+%   \end{minted}
 
-  \item Talked about \mintinline{fortran}|collapse|, \mintinline{fortran}|nowait| and \mintinline{fortran}|schedule| clauses.
+%   \item Talked about \mintinline{fortran}|collapse|, \mintinline{fortran}|nowait| and \mintinline{fortran}|schedule| clauses.
 
-\end{itemize}
-\end{frame}
+% \end{itemize}
+% \end{frame}
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{The first exercise}
 
 \begin{itemize}
   \item Parallelise a serial 5-point stencil code using OpenMP.
-  \item Solution is really just adding an OpenMP worksharing construct:
+  \item Solution is adding an OpenMP worksharing construct:
 \end{itemize}
 
 \begin{minted}[frame=single,breaklines]{fortran}
@@ -272,6 +272,7 @@ Use a simple program to numerically approximate $\pi$ to explore:
 
 $$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
 
+\begin{adjustbox}{max totalsize={\textwidth}{0.6\textheight},center}
 \begin{tikzpicture}
   \begin{axis}[xlabel={$x$},ylabel={$f(x)$},ymin=0]
     \addplot [name path=A, domain=0:1] {4/(1+x*x)};
@@ -281,12 +282,15 @@ $$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
     \addplot[blue!30] fill between [of=A and axis, domain=0:1];
   \end{axis}
 \end{tikzpicture}
+\end{adjustbox}
 \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}
 \frametitle{Trapezoidal rule}
 Sum the area of the boxes. Choose a small \emph{step} size to generate lots of boxes, and increase accuracy.
+
+\begin{adjustbox}{max totalsize={\textwidth}{0.6\textheight},center}
 \begin{tikzpicture}
   \begin{axis}[xlabel={$x$},ylabel={$f(x)$},ymin=0]
     \addplot [name path=A, domain=0:1] {4/(1+x*x)};
@@ -300,6 +304,7 @@ Sum the area of the boxes. Choose a small \emph{step} size to generate lots of b
     \addplot[yellow!30] fill between [of=A and axis, soft clip={domain=0.8:1}];
   \end{axis}
 \end{tikzpicture}
+\end{adjustbox}
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -481,7 +486,7 @@ Make \mintinline{fortran}|sum| an array of length equal to the number of threads
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Independent summation}
-\begin{minted}[linenos,breaklines,frame=single]{fortran}
+\begin{minted}[fontsize=\small,linenos,breaklines,frame=single]{fortran}
   step = 1.0/num_steps
   !$omp parallel private(x,tid)
   tid = omp_get_thread_num()
@@ -563,7 +568,7 @@ Can use data sharing clauses to our advantage here:
 
 Give each thread a \emph{scalar} copy of \mintinline{fortran}|sum| to compute their partial sum, and reduce with only one critical (or atomic) region at the end.
 No false sharing, as value is just a single number (i.e.\ a register).
-\begin{minted}[linenos,breaklines,frame=single,fontsize=\small]{fortran}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\footnotesize]{fortran}
   step = 1.0/num_steps
   !$omp parallel private(x) firstprivate(sum)
   !$omp do
@@ -717,8 +722,8 @@ Use the \mintinline{fortran}|reduction| clause for reductions.
 \begin{itemize}
   \item Have now covered the most common parts of OpenMP.
   \item 80/20 rule: Most programs will only use what you know so far.
-  \item In the remaining sessions you'll learn to program OpenMP well on modern computer architecture.
   \item OpenMP is deceptively simple!
+  \item In the remaining sessions you'll learn to program OpenMP on NUMA and GPU architectures.
 \end{itemize}
 \end{frame}
 
