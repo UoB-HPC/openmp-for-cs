@@ -1,4 +1,4 @@
-\documentclass{beamer}
+\documentclass[aspectratio=169]{beamer}
 
 \input{preamble.tex}
 
@@ -14,91 +14,92 @@
 \begin{frame}
 \frametitle{Outline}
 
-\begin{itemize}
-  \item Quick recap of NUMA exercise
-\end{itemize}
+% \begin{itemize}
+%   \item Quick recap of NUMA exercise
+% \end{itemize}
 
 \begin{itemize}
   \item GPU introduction
   \item The OpenMP \mintinline{fortran}|target| construct
-  \item Device data environment
   \item Memory movement
-  \item Asynchronous offload
-  \item Tools
+  \item Parallelism
+  \item Device data environment
+  % \item Asynchronous offload
+  % \item Tools
 \end{itemize}
 \end{frame}
 
-%-------------------------------------------------------------------------------
-\section{Recap}
-\begin{frame}
-\frametitle{Previous exercise}
+% %-------------------------------------------------------------------------------
+% \section{Recap}
+% \begin{frame}
+% \frametitle{Previous exercise}
 
-Take your vectorised 5-point stencil code, with optimised memory access patterns, and consider NUMA issues.
-\begin{itemize}
-  \item Only one change required: add \mintinline{fortran}|!$omp parallel do| to initilisation loops.
-\end{itemize}
+% Take your vectorised 5-point stencil code, with optimised memory access patterns, and consider NUMA issues.
+% \begin{itemize}
+%   \item Only one change required: add \mintinline{fortran}|!$omp parallel do| to initilisation loops.
+% \end{itemize}
 
 
-Dual-socket Intel Xeon E5-2680 v4 @ 2.40GHz (2x14 cores), Intel 2018, {\tt -O3 -xHost}.
-$nx=ny=20,000$, $ntimes=30$. Removed \mintinline{fortran}|write| statement. Taken best of 5 runs.
+% Dual-socket Intel Xeon E5-2680 v4 @ 2.40GHz (2x14 cores), Intel 2018, {\tt -O3 -xHost}.
+% $nx=ny=20,000$, $ntimes=30$. Removed \mintinline{fortran}|write| statement. Taken best of 5 runs.
 
-\begin{table}
-\begin{tabular}{ccc}
-\toprule
-Version & Runtime (s) & Memory bandwidth (GB/s)\\
-\midrule
-Initial parallel reduction & 25.667 &  7.48 \\
-Swap loops + vectorise     &  4.876 & 39.38 \\
-NUMA aware initialisation  &  2.365 & 81.18 \\
-\bottomrule
-\end{tabular}
-\end{table}
+% \begin{table}
+% \begin{tabular}{ccc}
+% \toprule
+% Version & Runtime (s) & Memory bandwidth (GB/s)\\
+% \midrule
+% Initial parallel reduction & 25.667 &  7.48 \\
+% Swap loops + vectorise     &  4.876 & 39.38 \\
+% NUMA aware initialisation  &  2.365 & 81.18 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
-2X improvement in runtime of the \emph{main kernel}!
+% 2X improvement in runtime of the \emph{main kernel}!
 
-\end{frame}
+% \end{frame}
 
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Previous exercise}
+% %-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{Previous exercise}
 
-\begin{itemize}
-  \item 81.18~GB/s is 63\% of STREAM Triad bandwidth on this Broadwell system.
-  \item This is good! We wouldn't expect to reach Triad bandwidth for more realistic examples.
-  \item Missing bandwidth can be explained by looking at vectorisation reports:
-  \begin{itemize}
-    \item The STREAM kernels use \emph{streaming stores}, and the 5-point stencil doesn't.
-  \end{itemize}
-\end{itemize}
+% \begin{itemize}
+%   \item 81.18~GB/s is 63\% of STREAM Triad bandwidth on this Broadwell system.
+%   \item This is good! We wouldn't expect to reach Triad bandwidth for more realistic examples.
+%   \item Missing bandwidth can be explained by looking at vectorisation reports:
+%   \begin{itemize}
+%     \item The STREAM kernels use \emph{streaming stores}, and the 5-point stencil doesn't.
+%   \end{itemize}
+% \end{itemize}
 
-\end{frame}
+% \end{frame}
 
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Streaming stores}
+% %-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{Streaming stores}
 
-\begin{itemize}
-  \item Streaming stores write directory to main memory, avoiding cache.
-  \item Prevents invoking Intel's read-for-ownership mechanism:
-  \begin{itemize}
-    \item A write to cache required first \emph{reading} the memory (to place it in cache),
-    \item and then writing to it.
-    \item Doubles the data movement.
-  \end{itemize}
+% \begin{itemize}
+%   \item Streaming stores write directory to main memory, avoiding cache.
+%   \item Prevents invoking Intel's read-for-ownership mechanism:
+%   \begin{itemize}
+%     \item A write to cache required first \emph{reading} the memory (to place it in cache),
+%     \item and then writing to it.
+%     \item Doubles the data movement.
+%   \end{itemize}
 
-\vfill
-\pause
+% \vfill
+% \pause
 
-  \item STREAM Triad \emph{without} streaming stores gets 94.6~GB/s instead of 129.0~GB/s.
-  \item Our kernel can't use streaming stores (alignment): 85.8\% achievable bandwidth.
+%   \item STREAM Triad \emph{without} streaming stores gets 94.6~GB/s instead of 129.0~GB/s.
+%   \item Our kernel can't use streaming stores (alignment): 85.8\% achievable bandwidth.
 
-\vfill
-\pause
+% \vfill
+% \pause
 
-  \item Much closer! Missing bandwidth may be gained through improving data locality in caches (via tiling).
-\end{itemize}
+%   \item Much closer! Missing bandwidth may be gained through improving data locality in caches (via tiling).
+% \end{itemize}
 
-\end{frame}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
 \section{GPU introduction}
@@ -114,7 +115,7 @@ Why use a GPU?
 
 \begin{columns}
 \begin{column}{0.5\textwidth}
-\begin{adjustbox}{max width={\textwidth}}
+\begin{adjustbox}{max width={0.8\textwidth}}
 \begin{tikzpicture}
   \begin{axis}[ybar,
                symbolic x coords={Broadwell, Skylake, P100, V100},
@@ -127,7 +128,7 @@ Why use a GPU?
 \end{column}
 
 \begin{column}{0.5\textwidth}
-\begin{adjustbox}{max width={\textwidth}}
+\begin{adjustbox}{max width={0.8\textwidth}}
 \begin{tikzpicture}
   \begin{axis}[ybar,
                symbolic x coords={Broadwell, Skylake, P100, V100},
@@ -283,237 +284,8 @@ Get code region running on the device.
     \begin{itemize}
       \item Allows host thread to continue working. Must synchronise later using tasks.
     \end{itemize}
-  \item Other clauses mainly about memory movement, which we'll come to later.
+  \item Other clauses mainly about memory movement.
 \end{itemize}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{The one construct you'll need}
-In general, you'll run loops on the device using:
-\begin{minted}[frame=single]{fortran}
-!$omp target teams distribute parallel do
-do i = 1, N
-  ... ! Loop body
-end do
-!$omp end target teams distribute parallel do
-\end{minted}
-
-\vfill
-
-We'll walk through what the constituent parts mean.
-
-\vfill
-
-\begin{alertblock}{Warning!}
-Not using this combined statement can have severe performance issues.
-\end{alertblock}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Execution model: teams}
-
-\begin{minted}[frame=single]{fortran}
-!$omp target teams 
-... ! Code
-!$omp end target teams
-\end{minted}
-
-\begin{itemize}
-  \item OpenMP \emph{threads} on a device are grouped into a \emph{team}.
-  \item Can synchronise threads \emph{within} a team.
-  \item \emph{Cannot} synchronise between teams (must exit \mintinline{fortran}|target| region for this).
-  \item Groups of teams are called a \emph{league}.
-  \item \mintinline{fortran}|target| construct offloads (serial) execution to device.
-  \item \mintinline{fortran}|teams| construct creates a league of times.
-  \item Master thread in \emph{each} team (redundantly) executes the code.
-\end{itemize}
-
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Execution model: teams}
-\begin{itemize}
-  \item The \mintinline{fortran}|target teams| construct creates a number of teams on the GPU, each containing one thread.
-  \item All threads execute code block.
-\end{itemize}
-
-\begin{center}
-\begin{tikzpicture}
-  \draw (0,0) rectangle (1,4);
-  \draw[->] (0.5,3.8) -- (0.5,2);
-
-  \draw (2,0) rectangle (3,4);
-  \draw[->] (2.5,3.8) -- (2.5,2);
-
-  \draw (4,0) rectangle (5,4);
-  \draw[->] (4.5,3.8) -- (4.5,2);
-
-  \draw (6,0) rectangle (7,4);
-  \draw[->] (6.5,3.8) -- (6.5,2);
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Execution model: distribute}
-\begin{itemize}
-  \item Distribute iterations of a loop across teams.
-  \item Each team gets part of the iteration space.
-  \item Change default assignment with \mintinline{fortran}|dist_schedule(static)| clause. Optionally include chunk size.
-  \item Still only the master thread in the team executes them.
-\end{itemize}
-
-\begin{minted}[frame=single]{fortran}
-!$omp target teams distribute
-do i = 1, N
-... ! Code
-end do
-!$omp end target teams distribute
-\end{minted}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Execution model: distribute}
-\begin{itemize}
-  \item The \mintinline{fortran}|target teams distribute| construct distributes loop iterations to the teams.
-  \item Teams still only contain one thread.
-  \item Each team computes a different iteration range.
-\end{itemize}
-
-\begin{center}
-\begin{tikzpicture}
-  \draw (0,0) rectangle (1,4);
-  \draw[->] (0.5,3.8) -- (0.5,2);
-  \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
-
-  \draw (2,0) rectangle (3,4);
-  \draw[->] (2.5,3.8) -- (2.5,2);
-  \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
-
-  \draw (4,0) rectangle (5,4);
-  \draw[->] (4.5,3.8) -- (4.5,2);
-  \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
-
-  \draw (6,0) rectangle (7,4);
-  \draw[->] (6.5,3.8) -- (6.5,2);
-  \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Execution model: parallel do}
-\begin{itemize}
-  \item Same semantics as on the CPU!
-  \item Launches threads within the team and distributes iterations across those threads.
-  \item Note, iterations that were assigned to the team by the \mintinline{fortran}|distribute| construct are distributed across threads in the team.
-  \item Can use the \mintinline{fortran}|schedule| clause too.
-\end{itemize}
-
-\begin{minted}[frame=single]{fortran}
-!$omp target teams distribute parallel do
-do i = 1, N
-... ! Code
-end do
-!$omp end target teams distribute parallel do
-\end{minted}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Execution model: parallel do}
-\begin{itemize}
-  \item The \mintinline{fortran}|target teams distribute parallel do| construct launches threads in each team.
-  \item Threads in the team share iteration space assigned by \mintinline{fortran}|distribute| construct.
-  \item Finally have lots of parallel execution!
-\end{itemize}
-
-\begin{center}
-\begin{tikzpicture}
-  % Draw teams
-  \draw (0,0) rectangle (1,4);
-  \draw (2,0) rectangle (3,4);
-  \draw (4,0) rectangle (5,4);
-  \draw (6,0) rectangle (7,4);
-
-  % Draw 5 threads in each team
-  \foreach \j in {0, 2, 4, 6} {
-    \foreach \i in {0.1, 0.3, 0.5, 0.7, 0.9} {
-      \draw[->] (\j+\i,3.8) -- (\j+\i,2);
-    }
-  }
-
-  % Label iteration space
-  \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
-  \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
-  \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
-  \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
-
-  % Label thread iterations
-  \draw (0.5, 1.5) node {\tiny\mintinline{fortran}|0:1,5|};
-  \draw (0.5, 1.3) node {\tiny\mintinline{fortran}|1:6,10|};
-  \draw (0.5, 1.1) node {\tiny\mintinline{fortran}|2:7,15|};
-  \draw (0.5, 0.9) node {\tiny\mintinline{fortran}|3:16,20|};
-  \draw (0.5, 0.7) node {\tiny\mintinline{fortran}|4:21,25|};
-
-  \draw (2.5, 1.5) node {\tiny\mintinline{fortran}|0:26,30|};
-  \draw (2.5, 1.3) node {\tiny\mintinline{fortran}|1:31,35|};
-  \draw (2.5, 1.1) node {\tiny\mintinline{fortran}|2:36,40|};
-  \draw (2.5, 0.9) node {\tiny\mintinline{fortran}|3:41,45|};
-  \draw (2.5, 0.7) node {\tiny\mintinline{fortran}|4:46,50|};
-
-  \draw (4.5, 1.5) node {\tiny\mintinline{fortran}|0:51,55|};
-  \draw (4.5, 1.3) node {\tiny\mintinline{fortran}|1:56,60|};
-  \draw (4.5, 1.1) node {\tiny\mintinline{fortran}|2:61,65|};
-  \draw (4.5, 0.9) node {\tiny\mintinline{fortran}|3:66,70|};
-  \draw (4.5, 0.7) node {\tiny\mintinline{fortran}|4:71,75|};
-
-  \draw (6.5, 1.5) node {\tiny\mintinline{fortran}|0:76,80|};
-  \draw (6.5, 1.3) node {\tiny\mintinline{fortran}|1:81,85|};
-  \draw (6.5, 1.1) node {\tiny\mintinline{fortran}|2:86,90|};
-  \draw (6.5, 0.9) node {\tiny\mintinline{fortran}|3:91,95|};
-  \draw (6.5, 0.7) node {\tiny\mintinline{fortran}|4:96,100|};
-\end{tikzpicture}
-\end{center}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{SIMD construct}
-\begin{itemize}
-  \item The \mintinline{fortran}|simd| construct is also valid on the \mintinline{fortran}|distribute parallel do| construct.
-  \item OpenMP says this means SIMD instructions are generated.
-  \item Minor implementation details differ between compilers.
-  \item Clang and IBM XL compilers ignore the \mintinline{fortran}|simd| clause.
-  \item Cray ignores the \mintinline{fortran}|parallel do| and issues a warning about it, but does a good job of autovectorising.
-  \item \mintinline{fortran}|!$omp target teams distribute parallel do| is a portable solution for practically obtaining the same parallelism across compilers.
-\end{itemize}
-
-
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Execution example}
-
-Simple vector addition kernel to illustrate GPU execution.
-
-\begin{minted}[frame=single]{fortran}
-!$omp target teams distribute parallel do
-do i = 1, N
-  c(i) = a(i) + b(i)
-end do
-!$omp end target teams distribute parallel do
-\end{minted}
-
-Might not work out of the box as we haven't said anything about memory movement.
-
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -571,8 +343,8 @@ Might not work out of the box as we haven't said anything about memory movement.
   \item Default behaviour:
     \begin{itemize}
       \item Scalars are mapped \mintinline{fortran}|firstprivate|.
-      \item This means the \emph{do not} get copied back to the host.
-      \item Actually saves a memory copy as passed like a subroutine argument.
+      \item This means they \emph{do not} get copied back to the host.
+      \item Actually saves a memory copy as passed like a kernel argument.
 
 \vfill
 
@@ -593,7 +365,7 @@ Might not work out of the box as we haven't said anything about memory movement.
 
   \item Assume we have an array \mintinline{fortran}|A(1:N)| and a scalar \mintinline{fortran}|x|.
   \item Sizes of arrays are generally known in Fortran so don't need to specify amount of data to copy.
-  \item Can use array slicing, but slicing whole array buggy with Cray compiler.
+  \item Can use array slicing.%, but slicing whole array buggy with Cray compiler.
   \item (you shouldn't be using assume sized arrays in your kernels anyway!)
 \end{itemize}
 
@@ -637,6 +409,327 @@ Direction defined from the \emph{host} perspective.
 \end{itemize}
 \end{frame}
 
+
+%-------------------------------------------------------------------------------
+\section{Exercise}
+\begin{frame}
+\frametitle{Exercise}
+\begin{itemize}
+  \item Port your 5-point stencil code to the GPU.
+  \item Use the \mintinline{fortran}|target| construct to transfer execution.
+  \item Use the \mintinline{fortran}|map| clauses to transfer data.
+  % \item Extra: Think about the performance compared to your CPU version.
+\end{itemize}
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+  \frametitle{The one construct you'll need}
+  In general, you'll run loops on the device using:
+  \begin{minted}[frame=single]{fortran}
+  !$omp target teams distribute parallel do
+  do i = 1, N
+    ... ! Loop body
+  end do
+  !$omp end target teams distribute parallel do
+  \end{minted}
+  
+  \vfill
+  
+  We'll walk through what the constituent parts mean.
+  
+  \vfill
+  
+  \begin{alertblock}{Warning!}
+  Not using this combined statement can have severe performance issues.
+  \end{alertblock}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}[fragile]
+  \frametitle{Execution model: teams}
+  
+  \begin{minted}[frame=single]{fortran}
+  !$omp target teams 
+  ... ! Code
+  !$omp end target teams
+  \end{minted}
+  
+  \begin{itemize}
+    \item OpenMP \emph{threads} on a device are grouped into a \emph{team}.
+    \item Can synchronise threads \emph{within} a team.
+    \item \emph{Cannot} synchronise between teams (must exit \mintinline{fortran}|target| region for this).
+    \item Groups of teams are called a \emph{league}.
+    \item \mintinline{fortran}|target| construct offloads (serial) execution to device.
+    \item \mintinline{fortran}|teams| construct creates a league of times.
+    \item Master thread in \emph{each} team (redundantly) executes the code.
+  \end{itemize}
+  
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}
+  \frametitle{Execution model: teams}
+  \begin{itemize}
+    \item The \mintinline{fortran}|target teams| construct creates a number of teams on the GPU, each containing one thread.
+    \item All threads execute code block.
+  \end{itemize}
+  
+  \begin{center}
+  \begin{tikzpicture}
+    \draw (0,0) rectangle (1,4);
+    \draw[->] (0.5,3.8) -- (0.5,2);
+  
+    \draw (2,0) rectangle (3,4);
+    \draw[->] (2.5,3.8) -- (2.5,2);
+  
+    \draw (4,0) rectangle (5,4);
+    \draw[->] (4.5,3.8) -- (4.5,2);
+  
+    \draw (6,0) rectangle (7,4);
+    \draw[->] (6.5,3.8) -- (6.5,2);
+  \end{tikzpicture}
+  \end{center}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}[fragile]
+  \frametitle{Execution model: distribute}
+  \begin{itemize}
+    \item Distribute iterations of a loop across teams.
+    \item Each team gets part of the iteration space.
+    \item Change default assignment with \mintinline{fortran}|dist_schedule(static)| clause. Optionally include chunk size.
+    \item Still only the master thread in the team executes them.
+  \end{itemize}
+  
+  \begin{minted}[frame=single]{fortran}
+  !$omp target teams distribute
+  do i = 1, N
+  ... ! Code
+  end do
+  !$omp end target teams distribute
+  \end{minted}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}
+  \frametitle{Execution model: distribute}
+  \begin{itemize}
+    \item The \mintinline{fortran}|target teams distribute| construct distributes loop iterations to the teams.
+    \item Teams still only contain one thread.
+    \item Each team computes a different iteration range.
+  \end{itemize}
+  
+  \begin{center}
+  \begin{tikzpicture}
+    \draw (0,0) rectangle (1,4);
+    \draw[->] (0.5,3.8) -- (0.5,2);
+    \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
+  
+    \draw (2,0) rectangle (3,4);
+    \draw[->] (2.5,3.8) -- (2.5,2);
+    \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
+  
+    \draw (4,0) rectangle (5,4);
+    \draw[->] (4.5,3.8) -- (4.5,2);
+    \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
+  
+    \draw (6,0) rectangle (7,4);
+    \draw[->] (6.5,3.8) -- (6.5,2);
+    \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
+  \end{tikzpicture}
+  \end{center}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}[fragile]
+  \frametitle{Execution model: parallel do}
+  \begin{itemize}
+    \item Same semantics as on the CPU!
+    \item Launches threads within the team and distributes iterations across those threads.
+    \item Note, iterations that were assigned to the team by the \mintinline{fortran}|distribute| construct are distributed across threads in the team.
+    \item Can use the \mintinline{fortran}|schedule| clause too.
+  \end{itemize}
+  
+  \begin{minted}[frame=single]{fortran}
+  !$omp target teams distribute parallel do
+  do i = 1, N
+  ... ! Code
+  end do
+  !$omp end target teams distribute parallel do
+  \end{minted}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}
+  \frametitle{Execution model: parallel do}
+  \begin{itemize}
+    \item The \mintinline{fortran}|target teams distribute parallel do| construct launches threads in each team.
+    \item Threads in the team share iteration space assigned by \mintinline{fortran}|distribute| construct.
+    \item Finally have lots of parallel execution!
+  \end{itemize}
+  
+  \begin{center}
+  \begin{tikzpicture}
+    % Draw teams
+    \draw (0,0) rectangle (1,4);
+    \draw (2,0) rectangle (3,4);
+    \draw (4,0) rectangle (5,4);
+    \draw (6,0) rectangle (7,4);
+  
+    % Draw 5 threads in each team
+    \foreach \j in {0, 2, 4, 6} {
+      \foreach \i in {0.1, 0.3, 0.5, 0.7, 0.9} {
+        \draw[->] (\j+\i,3.8) -- (\j+\i,2);
+      }
+    }
+  
+    % Label iteration space
+    \draw (0.5,4.5) node {\mintinline{fortran}|i=1,25|};
+    \draw (2.5,4.5) node {\mintinline{fortran}|i=26,50|};
+    \draw (4.5,4.5) node {\mintinline{fortran}|i=51,75|};
+    \draw (6.5,4.5) node {\mintinline{fortran}|i=76,100|};
+  
+    % Label thread iterations
+    \draw (0.5, 1.5) node {\tiny\mintinline{fortran}|0:1,5|};
+    \draw (0.5, 1.3) node {\tiny\mintinline{fortran}|1:6,10|};
+    \draw (0.5, 1.1) node {\tiny\mintinline{fortran}|2:7,15|};
+    \draw (0.5, 0.9) node {\tiny\mintinline{fortran}|3:16,20|};
+    \draw (0.5, 0.7) node {\tiny\mintinline{fortran}|4:21,25|};
+  
+    \draw (2.5, 1.5) node {\tiny\mintinline{fortran}|0:26,30|};
+    \draw (2.5, 1.3) node {\tiny\mintinline{fortran}|1:31,35|};
+    \draw (2.5, 1.1) node {\tiny\mintinline{fortran}|2:36,40|};
+    \draw (2.5, 0.9) node {\tiny\mintinline{fortran}|3:41,45|};
+    \draw (2.5, 0.7) node {\tiny\mintinline{fortran}|4:46,50|};
+  
+    \draw (4.5, 1.5) node {\tiny\mintinline{fortran}|0:51,55|};
+    \draw (4.5, 1.3) node {\tiny\mintinline{fortran}|1:56,60|};
+    \draw (4.5, 1.1) node {\tiny\mintinline{fortran}|2:61,65|};
+    \draw (4.5, 0.9) node {\tiny\mintinline{fortran}|3:66,70|};
+    \draw (4.5, 0.7) node {\tiny\mintinline{fortran}|4:71,75|};
+  
+    \draw (6.5, 1.5) node {\tiny\mintinline{fortran}|0:76,80|};
+    \draw (6.5, 1.3) node {\tiny\mintinline{fortran}|1:81,85|};
+    \draw (6.5, 1.1) node {\tiny\mintinline{fortran}|2:86,90|};
+    \draw (6.5, 0.9) node {\tiny\mintinline{fortran}|3:91,95|};
+    \draw (6.5, 0.7) node {\tiny\mintinline{fortran}|4:96,100|};
+  \end{tikzpicture}
+  \end{center}
+  \end{frame}
+  
+  %-------------------------------------------------------------------------------
+  \begin{frame}
+  \frametitle{SIMD construct}
+  \begin{itemize}
+    \item The \mintinline{fortran}|simd| construct is also valid on the \mintinline{fortran}|distribute parallel do| construct.
+    \item OpenMP says this means SIMD instructions are generated.
+    \item Minor implementation details differ between compilers.
+    \item Compilers sometimes ignore different parts of the construct, depending on the situation.
+    %\item Clang and IBM XL compilers ignore the \mintinline{fortran}|simd| clause.
+    %\item Cray ignores the \mintinline{fortran}|parallel do| and issues a warning about it, but does a good job of autovectorising.
+    \item \mintinline{fortran}|!$omp target teams distribute parallel do| is a portable solution for practically obtaining the same parallelism across compilers.
+  \end{itemize}
+  
+  
+  \end{frame}
+
+  %-------------------------------------------------------------------------------
+
+\begin{frame}
+\frametitle{OpenMP: mapping the parallelism}
+\begin{itemize}
+  \item OpenMP defines three levels of parallelism:
+  \begin{enumerate}
+    \item Teams.
+    \item Parallel threads.
+    \item SIMD.
+  \end{enumerate}
+  \item But most GPU hardware really has two levels of parallelism:
+  \begin{enumerate}
+  \item Compute units.
+  \item Processing elements.
+  \end{enumerate}
+  \item Implementations have flexibility in how they associate OpenMP concepts to the underlying hardware.
+  \item LLVM-based compilers, including Cray CCE >= 9, usually associate:
+  \begin{itemize}
+    \item OpenMP teams to compute units.
+    \item OpenMP threads to processing elements.
+    \item OpenMP SIMD is ignored.
+  \end{itemize}
+  \item Cray classic compiler maps SIMD to processing elements instead.
+\end{itemize}
+\end{frame}
+
+
+%-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{How is this parallelism applied?}
+Consider:
+ \mintinline{fortran}|!$omp teams distribute|
+ \begin{itemize}
+  \item Loop iterations distributed between teams.
+  \item Remember, you can’t synchronize between teams.
+  \item So all iterations are independent.
+  \item Implementations can, and will, share the work across the whole GPU:
+  \begin{itemize}
+     \item OpenMP teams being mapped to processing elements.
+     \item Doesn’t matter how the work-items are grouped into work-groups (compute units) as no synchronisation.
+  \end{itemize}
+  \item Behaves somewhat like SIMD auto-vectorization.
+\end{itemize}
+\end{frame}
+  %-------------------------------------------------------------------------------
+
+\begin{frame}
+\frametitle{What parallelism are you getting?}
+\begin{itemize}
+  \item With more than one possible mapping, sometimes you need to find out what is really happening.
+  \item Compiler documentation:
+  \begin{itemize}
+    \item Cray: \mintinline{bash}|man intro_openmp|
+  \end{itemize}
+  \item Compiler output:
+  \begin{itemize}
+    \item In CCE 10, \mintinline{bash}|-fsave-loopmark flag|
+  \end{itemize}
+
+  \item Profiling:
+  \begin{itemize}
+  \item  \mintinline{bash}|$ nvprof --print-gpu-trace|
+  \item  Look for the number of threads per block, and number of blocks.
+  \item  Combine that with knowledge of pragma and number of loop iterations.
+  \end{itemize}
+  \end{itemize}
+  \end{frame}
+ 
+  %-------------------------------------------------------------------------------
+  \begin{frame}
+  \begin{block}{Coffee break!}
+  \end{block}
+  \end{frame}
+
+
+  %-------------------------------------------------------------------------------
+%  \begin{frame}[fragile]
+%  \frametitle{Execution example}
+%  
+%  Simple vector addition kernel to illustrate GPU execution.
+%  
+%  \begin{minted}[frame=single]{fortran}
+%  !$omp target teams distribute parallel do
+%  do i = 1, N
+%    c(i) = a(i) + b(i)
+%  end do
+%  !$omp end target teams distribute parallel do
+%  \end{minted}
+%  
+%  Might not work out of the box as we haven't said anything about memory movement.
+%  
+%  \end{frame}
+%
+
 %-------------------------------------------------------------------------------
 \subsection{Enter/exit data constructs}
 \begin{frame}[fragile]
@@ -662,15 +755,26 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
+\begin{frame}
+\frametitle{Data transfer revisited}
+\begin{itemize}
+\item Data transfers may happen at start and end of every \mintinline{fortran}|target| region.
+  \item Often want to perform initial device data environment setup once, run through iterative loop, copying back at end.
+  \item \textbf{Do not} want to copy the data every iteration! Very expensive.
+\end{itemize}
+
+\end{frame}
+
+%-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Enter/exit data constructs}
 \begin{itemize}
-  \item Often want to perform initial device data environment setup once, run through iterative loop, copying back at end.
-  \item \textbf{Do not} want to copy the data every iteration! Very expensive.
   \item Use \mintinline{fortran}|target enter data| and \mintinline{fortran}|target exit data| constructs to control device data environment.
+  \item Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|target| region in the big loop.
+  \item Target regions inherit the existing data environment.
 \end{itemize}
 
-\begin{minted}[frame=single,fontsize=\small]{fortran}
+\begin{minted}[frame=single,fontsize=\footnotesize]{fortran}
 !$omp target enter data map(to: A, B, C)
 
 do t = 1, N
@@ -682,7 +786,6 @@ end do
 !$omp target exit data map(from: C)
 
 \end{minted}
-Bulk transfers happen at beginning and end, not for every \mintinline{fortran}|target| region in the big loop.
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -729,7 +832,7 @@ end do
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Update construct}
-\begin{minted}[frame=single,fontsize=\footnotesize,linenos]{fortran}
+\begin{minted}[frame=single,fontsize=\tiny,linenos]{fortran}
 !$omp target enter data map(to: A, B, C)
 !$omp target
 ... ! Use A, B and C on device
@@ -758,7 +861,7 @@ A = 1.0
 \frametitle{Halo exchange}
 Use the \mintinline{fortran}|update| clause with a typical halo exchange pattern.
 
-\begin{minted}[frame=single,linenos,fontsize=\footnotesize]{fortran}
+\begin{minted}[frame=single,linenos,fontsize=\tiny]{fortran}
 !$omp target enter data map(...)
 
 do t = 1, N
@@ -782,28 +885,27 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\section{Reductions}
 \begin{frame}[fragile]
-\frametitle{Reductions}
-\begin{minted}[frame=single,breaklines,fontsize=\small]{fortran}
-integer :: i, N = 1000
-real(kind=8), allocatable :: A(:), B(:)
-real(kind=8) :: total
+\frametitle{Pointer swapping}
+Mapping between addresses on host and device is done when the target constructs are encountered.
+\begin{minted}[frame=single,linenos,fontsize=\tiny]{fortran}
+!$omp target enter data map(to: A, B)
 
-!$omp target map(to: A, B) map(tofrom: total)
-!$omp teams distribute parallel do reduction(+:total)
-do i = 1, N
-  total = total + (A(i) * B(i))
+do t = 1, N
+  !$omp target
+    A(1) = B(1)
+  
+  tmp => A
+  A => B
+  B => A
 end do
-!$omp end teams distribute parallel do
-!$omp end target
 \end{minted}
 
 \begin{itemize}
-  \item \mintinline{fortran}|total| is a scalar, so by default is mapped \mintinline{fortran}|firstprivate|.
-  \item I.e. Each thread on the device gets its own copy.
-  \item Importantly, it is \emph{not} copied back to the host at the end!
-  \item You \emph{must} use a \mintinline{fortran}|map| clause to bring the result back.
+\item On the \mintinline{fortran}|target| construct, the pointers are evaluated every time.
+\item The compiler/runtime makes sure the mappings occur as expected.
+\item If use \mintinline{fortran}|map(from: )| then data transferred back to location specifed on \emph{entry} to region, even if pointers swapped.
+\item Unlikely to run into confusing states if use \mintinline{fortran}|update| or \mintinline{fortran}|target exit data| to bring back the data.
 \end{itemize}
 
 \end{frame}
@@ -848,12 +950,11 @@ call expensive_io_routine()
 \begin{frame}
 \frametitle{Compiler support}
 \begin{itemize}
-  \item {\bf Cray} provided first vendor supported implementation targeting NVIDIA GPUs in late 2015. Latest version of CCE now supports all of OpenMP 4.5
+  \item {\bf Cray} provided first vendor supported implementation targeting NVIDIA GPUs in late 2015. Latest version of CCE now supports all of OpenMP 4.5 and some of 5.0.
+  \item {\bf LLVM/Clang} supports OpenMP 4.5 offload to NVIDIA GPUs. Used as base for many compilers.
   \item {\bf IBM} XL compiler suite utilises their prior work with Clang to provide OpenMP target support for NVIDIA GPUs.
-  \item {\bf Clang} compiler supports OpenMP 4.5 offload to NVIDIA GPUs in 7.0. Culmination of upstreaming IBM's work.
-  \item {\bf Intel} began support for OpenMP 4.0 targetting Intel Xeon Phi coprocessors in 2013 (version 15.0). Compiler versions 17.0+ support OpenMP 4.5 (targetting Xeon Phi).
-  \item {\bf GCC} 6.1 introduced support for OpenMP 4.5 targetting Intel Xeon Phi and HSA-enabled AMD GPUs. 7.0 added support for NVIDIA GPUs.
-  \item {\bf PGI} compilers don't currently support OpenMP on GPUs (does support OpenMP on CPUs).
+  \item {\bf Intel} began support for OpenMP 4.0 targetting Intel Xeon Phi coprocessors in 2013 (version 15.0). Compiler versions 17.0+ support OpenMP 4.5 (targetting Xeon Phi), and oneAPI targetting Intel GPUs.
+  \item {\bf GCC} 6.1 introduced support for OpenMP 4.5 targetting Intel Xeon Phi and HSA-enabled AMD GPUs. GCC 10.0 can target Intel Xeon Phi, AMD GCN GPUs and NVIDIA GPUs.
 \end{itemize}
 
 \url{www.openmp.org/resources/openmp-compilers-tools/}.
@@ -955,17 +1056,22 @@ nvprof --print-gpu-trace ./stencil_target
 \begin{frame}
 \frametitle{Exercise}
 \begin{itemize}
-  \item Port your 5-point stencil code to the GPU.
+  \item Parallelise your 5-point stencil code on the GPU.
+  \item Use the \mintinline{fortran}|target teams distribute parallel do| construct for parallelism.
   \item Use the \mintinline{fortran}|target enter/exit data| constructs to transfer data.
-  \item Use the \mintinline{fortran}|target teams distribute parallel do| construct for execution.
   \item Print out the grid sum for every iteration:
     \begin{itemize}
       \item Need to use \mintinline{fortran}|reduction| clause.
       \item Remember to \mintinline{fortran}|map| the reduction result!
     \end{itemize}
-  \item Extra: Think about the performance compared to your CPU version.
+  \item Experiment with different variations of the construct.
+  \item Try using the \mintinline{fortran}|collapse| clause to increase parallelism.
+  \item Profile the code with \mintinline{bash}|nvprof| to explore the mapping.
+  %\item Extra: Think about the performance compared to your CPU version.
 \end{itemize}
 \end{frame}
+
+
 
 %-------------------------------------------------------------------------------
 \section{Summary}
@@ -986,7 +1092,7 @@ nvprof --print-gpu-trace ./stencil_target
       \item \mintinline{fortran}|target update| constructs.
     \end{itemize}
 
-  \item The need to map back result of a reduction.
+  \item The need to map back result of a reduction in OpenMP 4.5.
 
 \end{itemize}
 \end{frame}
