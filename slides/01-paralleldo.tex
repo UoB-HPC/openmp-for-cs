@@ -1,22 +1,22 @@
-\documentclass{beamer}
+\documentclass[aspectratio=169]{beamer}
 
 \input{preamble.tex}
 
 \title{OpenMP for Computational Scientists}
-\subtitle{1: Getting up to speed with OpenMP}
+\subtitle{1: Parallel worksharing}
 
 \begin{document}
 
 \frame{\titlepage}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{The first exercise}
-\begin{itemize}
-  \item At the end of this session, you will be able to parallelise a (simple) 5-point stencil code using OpenMP!
-  \item The other sessions provide you with details you might need for real world codes.
-\end{itemize}
-\end{frame}
+% \begin{frame}
+% \frametitle{The first exercise}
+% \begin{itemize}
+%   \item At the end of this session, you will be able to parallelise a (simple) 5-point stencil code using OpenMP!
+%   \item The other sessions provide you with details you might need for real world codes.
+% \end{itemize}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
 \section{OpenMP introduction}
@@ -70,7 +70,7 @@ Turn on OpenMP in the compiler:
 \begin{minted}{bash}
 gfortran *.f90 -fopenmp # GNU
 ifort *.f90 -qopenmp    # Intel
-ftn *.f90               # Cray (on by default)
+ftn *.f90 -homp         # Cray (now off by default)
 pgf90 *.f90 -mp         # PGI
 \end{minted}
 
@@ -208,45 +208,45 @@ Threads are synchronised at the end of the parallel region.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Pthreads}
+% \begin{frame}[fragile]
+% \frametitle{Pthreads}
 
-\begin{minted}[fontsize=\small, linenos, frame=single]{fortran}
-program hello
-  use fpthread
-  integer :: i, err
-  integer :: N = 4
-  type(fpthread_t) :: Tide(N)
+% \begin{minted}[fontsize=\small, linenos, frame=single]{fortran}
+% program hello
+%   use fpthread
+%   integer :: i, err
+%   integer :: N = 4
+%   type(fpthread_t) :: Tide(N)
 
-  do i = 1, N
-    call fpthread_create(tid(i), NULL, run, NULL, err)
-  end do
-  do i = 1, N
-    call fpthread_join(tid(i), NULL, err)
-  end do
+%   do i = 1, N
+%     call fpthread_create(tid(i), NULL, run, NULL, err)
+%   end do
+%   do i = 1, N
+%     call fpthread_join(tid(i), NULL, err)
+%   end do
 
-  subroutine run
-    print *, "Hello"
-  end subroutine run
-end program hello
-\end{minted}
+%   subroutine run
+%     print *, "Hello"
+%   end subroutine run
+% end program hello
+% \end{minted}
 
-\end{frame}
+% \end{frame}
 
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{OpenMP and Pthreads}
-\begin{itemize}
-  \item Pthreads is very error prone and verbose.
-  \item The OpenMP \mintinline{fortran}|!$omp parallel| abstracts this away.
-  \item The compiler directive inserts this extra code on your behalf.
-  \item Pthreads requires wrapping up your parallel work in subroutines.
-    \begin{itemize}
-      \item Kernels are a useful abstraction used in many programming models.
-    \end{itemize}
-  \item OpenMP much more convenient for \emph{incrementally} adding parallelism to your code.
-\end{itemize}
-\end{frame}
+% %-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{OpenMP and Pthreads}
+% \begin{itemize}
+%   \item Pthreads is very error prone and verbose.
+%   \item The OpenMP \mintinline{fortran}|!$omp parallel| abstracts this away.
+%   \item The compiler directive inserts this extra code on your behalf.
+%   \item Pthreads requires wrapping up your parallel work in subroutines.
+%     \begin{itemize}
+%       \item Kernels are a useful abstraction used in many programming models.
+%     \end{itemize}
+%   \item OpenMP much more convenient for \emph{incrementally} adding parallelism to your code.
+% \end{itemize}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
@@ -278,7 +278,7 @@ In general it's better to use environment variables if you need to do this, as t
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Thread API calls}
-Most parallel programs are written in a SPMD style: \newline
+Parallel programs often written in a SPMD style: \newline
 {\bf S}ingle {\bf P}rogram, {\bf M}ultiple {\bf D}ata.
 \begin{itemize}
   \item MPI has a SPMD model.
@@ -306,7 +306,7 @@ The OpenMP API gives you calls to determine thread information when \emph{inside
 \frametitle{Vector add}
 Walkthrough parallelising vector addition using OpenMP.
 
-\begin{minted}[fontsize=\small,linenos,frame=single]{fortran}
+\begin{minted}[fontsize=\footnotesize,linenos,frame=single]{fortran}
 program vecadd
   integer :: N = 1024  ! Length of array
   ! Arrays
@@ -345,7 +345,7 @@ Every thread will now do the entire vector addition --- redundantly!
 \begin{frame}[fragile]
 \frametitle{Vector add: Step 2}
 Get thread IDs
-\begin{minted}[frame=single]{fortran}
+\begin{minted}[fontsize=\small,frame=single]{fortran}
   integer :: tid, nthreads
 
   !$omp parallel
@@ -375,7 +375,7 @@ What's the problem here?
   \item This gives each thread its own unique copy in memory for the variable.
 \end{itemize}
 
-\begin{minted}[frame=single]{fortran}
+\begin{minted}[fontsize=\small,frame=single]{fortran}
   integer :: tid, nthreads
 
   !$omp parallel private(tid)
@@ -411,6 +411,33 @@ Thread IDs are numbered from 0 in OpenMP.
 Be careful with your index calculation.
 \end{block}
 \end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+  \frametitle{Barriers}
+  A barrier simply synchronises threads in a parallel region.
+  
+  \begin{minted}[frame=single,linenos]{fortran}
+  !$omp parallel private(tid)
+  
+  tid = omp_get_thread_num()
+  A(tid) = big_work1(tid)
+  
+  !$omp barrier
+  
+  B(tid) = big_work2(A, tid)
+  
+  !$omp end parallel
+  \end{minted}
+  
+  \begin{itemize}
+    \item Running in parallel, need to compute \mintinline{fortran}|A(:)| before computing \mintinline{fortran}|B(:)|.
+    \item The barrier ensures all threads wait between these statements.
+    \item Must ensure all threads encounter the barrier.
+  \end{itemize}
+  
+  \end{frame}
+
 
 %-------------------------------------------------------------------------------
 \section{Worksharing}
@@ -471,22 +498,104 @@ The vector add codes are available in the repository for you to look at:
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Taking stock}
+\section{Loops}
+\begin{frame}[fragile]
+\frametitle{Nested loops}
 \begin{itemize}
-  \item We've seen how to parallelise a simple program using OpenMP.
-  \item Shown the MPI-style SPMD approach for dividing work.
-  \item OpenMP worksharing constructs make this easier.
+  \item Often have tightly nested loops in your code.
+  \item E.g. 2D grid code, every cell is independent.
+  \item OpenMP worksharing would only parallelise over first loop with each thread performing inner loop serially.
+  \item Use the \mintinline{fortran}|collapse(...)| clause to combine iteration spaces.
+  \item OpenMP then workshares the combined iteration space.
 \end{itemize}
 
-The rest of this session:
-\begin{itemize}
-  \item Expands on the worksharing constructs.
-  \item The first example for you to try.
-\end{itemize}
+\begin{minted}[frame=single]{fortran}
+!$omp parallel do collapse(2)
+do i = 1, N
+  do j = 1, N
+    ... ! loop body
+  end do
+end do
+!$omp end parallel do
+\end{minted}
+All $N^2$ iterations are distributed across threads, rather than just the $N$ of the outer loop.
 
-Next time: the rest of the OpenMP common core.
 \end{frame}
+
+
+%-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{Nested loops}
+% \begin{block}{Performance note}
+% Collapsing loops may subtly effect the compiler's knowledge about alignment and could affect vectorisation.
+% More on this when we talk about vectorisation in a later session.
+% \end{block}
+
+% \end{frame}
+
+%-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{Taking stock}
+% \begin{itemize}
+%   \item We've seen how to parallelise a simple program using OpenMP.
+%   \item Shown the MPI-style SPMD approach for dividing work.
+%   \item OpenMP worksharing constructs make this easier.
+% \end{itemize}
+
+% The rest of this session:
+% \begin{itemize}
+%   \item Expands on the worksharing constructs.
+%   \item The first example for you to try.
+% \end{itemize}
+
+% Then, onto the rest of the OpenMP common core.
+% \end{frame}
+
+%-------------------------------------------------------------------------------
+\section{Exercise}
+\begin{frame}
+\frametitle{5-point stencil exercise}
+First exercise: parallelise a simple 5-point stencil code using OpenMP.
+
+\begin{center}
+\begin{tikzpicture}
+\draw[step=1cm,gray,very thin] (-1.9,-1.9) grid (2.9,2.9);
+\draw[fill=black] (0.5,0.5) circle (0.1cm);
+\draw[fill=black] (-0.5,0.5) circle (0.1cm);
+\draw[fill=black] (1.5,0.5) circle (0.1cm);
+\draw[fill=black] (0.5,1.5) circle (0.1cm);
+\draw[fill=black] (0.5,-0.5) circle (0.1cm);
+\draw (-0.5,0.5) -- (1.5,0.5);
+\draw (0.5,-0.5) -- (0.5,1.5);
+\end{tikzpicture}
+\end{center}
+
+Value in every cell is set to the average of its neighbours.
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]
+\frametitle{5-point stencil exercise}
+Take \mintinline{bash}|stencil.f90| and parallelise it using OpenMP:
+\begin{enumerate}
+  \item Using a SPMD style.
+  \item Using the OpenMP worksharing clauses.
+  \item Vary the number of threads using \mintinline{bash}|OMP_NUM_THREADS|.
+\end{enumerate}
+
+Focus on parallelising the main loop(s):
+\begin{minted}[frame=single,breaklines]{fortran}
+do i = 1, nx
+  do j = 1, ny
+    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
+  end do
+end do
+\end{minted}
+
+Sample solutions are provided, but do try it yourself first.
+
+\end{frame}
+
 
 %-------------------------------------------------------------------------------
 \section{Scheduling}
@@ -630,42 +739,6 @@ The choice of schedules is an advanced tuning option.
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\section{Loops}
-\begin{frame}[fragile]
-\frametitle{Nested loops}
-\begin{itemize}
-  \item Often have tightly nested loops in your code.
-  \item E.g. 2D grid code, every cell is independent.
-  \item OpenMP worksharing would only parallelise over first loop with each thread performing inner loop serially.
-  \item Use the \mintinline{fortran}|collapse(...)| clause to combine iteration spaces.
-  \item OpenMP then workshares the combined iteration space.
-\end{itemize}
-
-\begin{minted}[frame=single]{fortran}
-!$omp parallel do collapse(2)
-do i = 1, N
-  do j = 1, N
-    ... ! loop body
-  end do
-end do
-!$omp end parallel do
-\end{minted}
-All $N^2$ iterations are distributed across threads, rather than just the $N$ of the outer loop.
-
-\end{frame}
-
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Nested loops}
-\begin{block}{Performance note}
-Collapsing loops may subtly effect the compiler's knowledge about alignment and could affect vectorisation.
-More on this when we talk about vectorisation in a later session.
-\end{block}
-
-\end{frame}
-
-%-------------------------------------------------------------------------------
 \section{Synchronisation}
 \begin{frame}[fragile]
 \frametitle{The nowait clause}
@@ -693,166 +766,95 @@ end do
 \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Synchronisation}
-A number of ways to synchronise the threads in OpenMP:
-\begin{multicols}{2}
-\begin{itemize}
-  \item Barriers
-  \item Critical
-  \item Atomics
-  \item Locks
-  \item Ordered
-  \item Single
-  \item Master
-  \item Flush
-\end{itemize}
-\end{multicols}
+% \begin{frame}
+% \frametitle{Synchronisation}
+% A number of ways to synchronise the threads in OpenMP:
+% \begin{multicols}{2}
+% \begin{itemize}
+%   \item Barriers
+%   \item Critical
+%   \item Atomics
+%   \item Locks
+%   \item Ordered
+%   \item Single
+%   \item Master
+%   \item Flush
+% \end{itemize}
+% \end{multicols}
 
-\vfill
+% \vfill
 
-\begin{itemize}
-  \item Will look at Critical and Atomic in Session 2.
-  \item Ordered, Single and Master in Session 6.
-  \item Won't formally cover Flush and Locks --- advanced stuff with esoteric use cases.
-\end{itemize}
+% \begin{itemize}
+%   \item Will look at Critical and Atomic in Session 2.
+%   \item Ordered, Single and Master in Session 6.
+%   \item Won't formally cover Flush and Locks --- advanced stuff with esoteric use cases.
+% \end{itemize}
 
-Quickly cover barriers now.
+% % Quickly cover barriers now.
 
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Barriers}
-A barrier simply synchronises threads in a parallel region.
-
-\begin{minted}[frame=single,linenos]{fortran}
-!$omp parallel private(tid)
-
-tid = omp_get_thread_num()
-A(tid) = big_work1(tid)
-
-!$omp barrier
-
-B(tid) = big_work2(A, tid)
-
-!$omp end parallel
-\end{minted}
-
-\begin{itemize}
-  \item Running in parallel, need to compute \mintinline{fortran}|A(:)| before computing \mintinline{fortran}|B(:)|.
-  \item The barrier ensures all threads wait between these statements.
-  \item Must ensure all threads encounter the barrier.
-\end{itemize}
-
-\end{frame}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
-\section{Miscellaneous}
-\begin{frame}[fragile]
-\frametitle{Nested threads}
-\begin{itemize}
-  \item Turn on support with by setting the environment variable \mintinline{fortran}|OMP_NESTED=true|, otherwise inner region is default serial.
-  \item Every thread in the (outer) parallel region then spawns threads.
-  \item Control the number of threads with clauses or environment variable: \mintinline{bash}|OMP_NUM_THREADS=4,2|.
-\end{itemize}
+% \section{Miscellaneous}
+% \begin{frame}[fragile]
+% \frametitle{Nested threads}
+% \begin{itemize}
+%   \item Turn on support with by setting the environment variable \mintinline{fortran}|OMP_NESTED=true|, otherwise inner region is default serial.
+%   \item Every thread in the (outer) parallel region then spawns threads.
+%   \item Control the number of threads with clauses or environment variable: \mintinline{bash}|OMP_NUM_THREADS=4,2|.
+% \end{itemize}
 
-\begin{minted}[frame=single]{fortran}
-!$omp parallel num_threads(4)
-... ! A parallel region
-  !$omp parallel num_threads(4)
-  ... ! Inner parallel region
-  !$omp end parallel
-!$omp end parallel
-\end{minted}
+% \begin{minted}[frame=single]{fortran}
+% !$omp parallel num_threads(4)
+% ... ! A parallel region
+%   !$omp parallel num_threads(4)
+%   ... ! Inner parallel region
+%   !$omp end parallel
+% !$omp end parallel
+% \end{minted}
 
-\end{frame}
+% \end{frame}
 
 
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Nested threads}
-\begin{alertblock}{Warning!}
-Be careful how you use nesting threads.
-It's very easy to oversubscribe threads.
-Thread affinity can be tricky.
-You probably don't need to use nested threads!
-\end{alertblock}
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{Multi-line directives}
-\begin{itemize}
-  \item Sometimes OpenMP directives can be quite long.
-  \item Nicer to split up the directive across lines in the source file using line continuation character \mintinline{fortran}|&|:
-\end{itemize}
-
-\begin{minted}{fortran}
-!$omp construct &
-!$omp& clause
-!$omp& clause
-\end{minted}
-
-\end{frame}
+% %-------------------------------------------------------------------------------
+% \begin{frame}
+% \frametitle{Nested threads}
+% \begin{alertblock}{Warning!}
+% Be careful how you use nesting threads.
+% It's very easy to oversubscribe threads.
+% Thread affinity can be tricky.
+% You probably don't need to use nested threads!
+% \end{alertblock}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
-\section{Exercise}
-\begin{frame}
-\frametitle{5-point stencil exercise}
-First exercise: parallelise a simple 5-point stencil code using OpenMP.
+% \begin{frame}[fragile]
+% \frametitle{Multi-line directives}
+% \begin{itemize}
+%   \item Sometimes OpenMP directives can be quite long.
+%   \item Nicer to split up the directive across lines in the source file using line continuation character \mintinline{fortran}|&|:
+% \end{itemize}
 
-\begin{center}
-\begin{tikzpicture}
-\draw[step=1cm,gray,very thin] (-1.9,-1.9) grid (2.9,2.9);
-\draw[fill=black] (0.5,0.5) circle (0.1cm);
-\draw[fill=black] (-0.5,0.5) circle (0.1cm);
-\draw[fill=black] (1.5,0.5) circle (0.1cm);
-\draw[fill=black] (0.5,1.5) circle (0.1cm);
-\draw[fill=black] (0.5,-0.5) circle (0.1cm);
-\draw (-0.5,0.5) -- (1.5,0.5);
-\draw (0.5,-0.5) -- (0.5,1.5);
-\end{tikzpicture}
-\end{center}
+% \begin{minted}{fortran}
+% !$omp construct &
+% !$omp& clause
+% !$omp& clause
+% \end{minted}
 
-Value in every cell is set to the average of its neighbours.
-\end{frame}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
-\begin{frame}[fragile]
-\frametitle{5-point stencil exercise}
-Take \mintinline{bash}|stencil.f90| and parallelise it using OpenMP:
-\begin{enumerate}
-  \item Using a SPMD style.
-  \item Using the OpenMP worksharing clauses.
-  \item Vary the number of threads using \mintinline{bash}|OMP_NUM_THREADS|.
-\end{enumerate}
-
-Focus on parallelising the main loop(s):
-\begin{minted}[frame=single,breaklines]{fortran}
-do i = 1, nx
-  do j = 1, ny
-    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
-  end do
-end do
-\end{minted}
-
-Sample solutions are provided, but do try it yourself first.
-
-\end{frame}
-
-%-------------------------------------------------------------------------------
-\begin{frame}
-\frametitle{Summary}
-This section introduced the OpenMP programming model:
-\begin{itemize}
-  \item Creating parallel regions: \mintinline{fortran}|!$omp parallel|/\mintinline{fortran}|!$omp end parallel|
-  \item Getting thread IDs: \mintinline{fortran}|omp_get_thread_num()|/\mintinline{fortran}|omp_get_num_threads()|
-  \item Worksharing constructs: \mintinline{fortran}|!$omp do|/\mintinline{fortran}|!$omp end do|
-  \item The \mintinline{fortran}|schedule| and \mintinline{fortran}|nowait| clauses
-  \item Synchronising threads with barriers: \mintinline{fortran}|!$omp barrier|
-\end{itemize}
-\end{frame}
+% \begin{frame}
+% \frametitle{Summary}
+% This section introduced the OpenMP programming model:
+% \begin{itemize}
+%   \item Creating parallel regions: \mintinline{fortran}|!$omp parallel|/\mintinline{fortran}|!$omp end parallel|
+%   \item Getting thread IDs: \mintinline{fortran}|omp_get_thread_num()|/\mintinline{fortran}|omp_get_num_threads()|
+%   \item Worksharing constructs: \mintinline{fortran}|!$omp do|/\mintinline{fortran}|!$omp end do|
+%   \item The \mintinline{fortran}|schedule| and \mintinline{fortran}|nowait| clauses
+%   \item Synchronising threads with barriers: \mintinline{fortran}|!$omp barrier|
+% \end{itemize}
+% \end{frame}
 
 %-------------------------------------------------------------------------------
 % \begin{frame}
