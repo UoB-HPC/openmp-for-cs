@@ -1,8 +1,8 @@
 
-FTN=gfortran
-CC=gcc
+FTN=ftn
+CC=cc
 FFLAGS=-Wall -O3
-LIBS=-fopenmp
+LIBS=-homp -rm
 
 TIMEOBJ=timer.o wtime.o
 
