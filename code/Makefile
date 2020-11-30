@@ -1,7 +1,7 @@
 
 FTN=ftn
 CC=cc
-FFLAGS=-Wall -O3
+FFLAGS=-O3
 LIBS=-homp -rm
 
 TIMEOBJ=timer.o wtime.o
