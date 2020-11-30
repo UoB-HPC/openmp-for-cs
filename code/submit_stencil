@@ -1,0 +1,12 @@
+#PBS -q R35178
+#PBS -V
+#PBS -joe
+#PBS -lselect=1:ncpus=28,place=excl
+#PBS -lwalltime=00:02:00
+#PBS -N stencil
+
+cd $PBS_O_WORKDIR
+
+export OMP_NUM_THREADS=28
+./stencil
+
