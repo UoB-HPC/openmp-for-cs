@@ -700,7 +700,7 @@ Use the \mintinline{fortran}|reduction| clause for reductions.
 
 %-------------------------------------------------------------------------------
 \section{Exercise}
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Exercise}
 \begin{itemize}
   \item Start with your parallel 5-point stencil code from last time.
@@ -714,6 +714,14 @@ Use the \mintinline{fortran}|reduction| clause for reductions.
     \end{itemize}
   \item Extension: there is also a Jacobi code to parallelise --- it needs a reduction too.
 \end{itemize}
+\begin{minted}[frame=single,breaklines]{fortran}
+do i = 1, nx
+  do j = 1, ny
+    Anew(i,j) = (A(i-1,j) + A(i+1,j) + A(i,j) + A(i,j-1) + A(i,j+1)) / 5.0
+    total = total + Anew(i,j)
+  end do
+end do
+\end{minted}
 \end{frame}
 
 %-------------------------------------------------------------------------------
