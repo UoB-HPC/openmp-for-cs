@@ -1,5 +1,5 @@
 
-all: ahpc-recap.pdf
+all: hpc-openmp-2020.pdf
 
 %.pdf:%.tex preamble.tex
 	latexmk -pdf -shell-escape $<
