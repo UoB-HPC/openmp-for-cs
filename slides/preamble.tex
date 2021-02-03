@@ -1,8 +1,11 @@
 
 % Beamer settings
 \usecolortheme{rose}
-\beamertemplatenavigationsymbolsempty
-\setbeamertemplate{footline}[frame number]
+
+\setbeamertemplate{footline}[text line]{%
+  \parbox{\linewidth}{\copyright Tom Deakin \hfill \insertframenumber\,/\,\inserttotalframenumber }}
+  \setbeamertemplate{navigation symbols}{}
+
 
 \titlegraphic{%
 \includegraphics[height=1cm]{logo-full-colour.png}}
