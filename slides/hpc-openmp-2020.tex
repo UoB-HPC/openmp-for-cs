@@ -126,7 +126,7 @@ An HPC node consisting of two multi-core CPUs.
 \end{center}
 \emph{All} threads (each running on a core) can access the same memory.
 
-Different to MPI, where one process cannot see the memory of another without explicit communication.
+%Different to MPI, where one process cannot see the memory of another without explicit communication.
 
 \end{frame}
 
@@ -173,7 +173,10 @@ In a \emph{fork-join} model, code starts serial, \emph{forks} a \emph{team} of t
 \end{tikzpicture}
 \end{center}
 
-Nested threads are allowed, where a thread forks its own team of threads. This is not often necessary, or even useful. However, OpenMP run-times are now clever at avoiding unnecessary thread creation/destruction, so the overhead of entering and leaving parallel regions may be negligible.
+%Nested threads are allowed, where a thread forks its own team of threads. This is not often necessary, or even useful.
+
+OpenMP run-times are now clever at avoiding unnecessary thread creation/destruction, so the overhead of entering and leaving parallel regions may be negligible.
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -189,13 +192,12 @@ int main(void) {
 }
 \end{minted}
 
-Threads \emph{redundantly} execute code in the block.
-
-Every thread will output \mintinline{bash}|Hello|.
-
-Threads are synchronised at the end of the parallel region.
-
-Parallel region defined by structured block of code.
+\begin{itemize}
+  \item Threads \emph{redundantly} execute code in the block.
+  \item Every thread will output \mintinline{bash}|Hello|.
+  \item Threads are synchronised at the end of the parallel region.
+  \item Parallel region defined by structured block of code.
+\end{itemize}
 
 \end{frame}
 
@@ -637,14 +639,11 @@ A barrier simply synchronises threads in a parallel region.
 \begin{minted}[frame=single,linenos]{c}
 #pragma omp parallel
 {
+  A[tid] = big_work1(tid);
 
-int tid = omp_get_thread_num();
-A[tid] = big_work1(tid);
+  #pragma omp barrier
 
-#pragma omp barrier
-
-B[tid] = big_work2(A, tid);
-
+  B[tid] = big_work2(A, tid);
 }
 \end{minted}
 
@@ -658,7 +657,7 @@ B[tid] = big_work2(A, tid);
 \end{frame}
 %-------------------------------------------------------------------------------
 
-\begin{frame}[fragile]
+\begin{frame}
 \frametitle{The nowait clause}
 \begin{itemize}
   \item Consider a series of independent loops.
@@ -667,6 +666,11 @@ B[tid] = big_work2(A, tid);
   \item When a thread finishes the first loop, it starts on the next loop.
 \end{itemize}
 
+\end{frame}
+%-------------------------------------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{The nowait clause}
 \begin{minted}[fontsize=\small, linenos, frame=single]{c}
 #pragma omp parallel
 {
@@ -857,8 +861,15 @@ Use a simple program to numerically approximate $\pi$ to explore:
 \begin{frame}
 \frametitle{Integration to calculate Pi}
 
-$$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
+\begin{columns}
 
+\begin{column}{0.5\textwidth}
+$$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
+\end{column}
+
+\begin{column}{0.5\textwidth}
+\begin{center}
+\begin{adjustbox}{width=\textwidth}
 \begin{tikzpicture}
   \begin{axis}[xlabel={$x$},ylabel={$f(x)$},ymin=0]
     \addplot [name path=A, domain=0:1] {4/(1+x*x)};
@@ -868,6 +879,12 @@ $$\int_{0}^{1} \frac{4}{1+x^2} dx = \pi$$
     \addplot[blue!30] fill between [of=A and axis, domain=0:1];
   \end{axis}
 \end{tikzpicture}
+\end{adjustbox}
+\end{center}
+\end{column}
+
+\end{columns}
+
 \end{frame}
 
 %-------------------------------------------------------------------------------
@@ -946,7 +963,7 @@ What about data sharing?
   \item A \mintinline{c}|critical| region only allows one thread to execute at any one time. No guarantees of ordering.
 \end{itemize}
 
-\begin{minted}[linenos,breaklines,frame=single]{c}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\small]{c}
   double step, x, sum, pi;
   step = 1.0/num_steps;
   #pragma omp parallel for private(x)
@@ -1070,7 +1087,7 @@ Make \mintinline{c}|sum| an array of length equal to the number of threads.
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Independent summation}
-\begin{minted}[linenos,breaklines,frame=single]{c}
+\begin{minted}[linenos,breaklines,frame=single,fontsize=\small]{c}
   step = 1.0/num_steps;
   #pragma omp parallel private(x,tid)
   {
