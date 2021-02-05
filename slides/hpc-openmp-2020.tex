@@ -14,14 +14,16 @@
 \begin{frame}
 \frametitle{What is OpenMP?}
 
-A collection of compiler directives, library routines, and environment variables for parallelism for shared memory parallel programs.
+A collection of compiler directives, library routines, and environment variables for writing shared memory parallel programs.
 
 \begin{itemize}
   \item Create and manage parallel programs while permitting portability.
   \item User-directed parallelization.
+  \item Support for heterogeneous programming of devices such as GPUs.
+  \item Support for expressing data parallelism, task parallelism, \dots
 \end{itemize}
 
-A \emph{specification} of annotations you can make to your program in order to make it parallel.
+OpenMP is a \emph{specification} of annotations you can make to your program in order to make it parallel.
 
 \end{frame}
 
@@ -36,7 +38,7 @@ A \emph{specification} of annotations you can make to your program in order to m
   These tell the compiler to insert some extra code on your behalf.
 
 \item Compiler directives usually apply to a \emph{structured block} of statements.
-Limited scoping in Fortran means we often need to use \emph{end} directives.
+Follows the scoping rules of C language.
   \begin{minted}{c}
   #pragma omp construct
   {
@@ -231,12 +233,12 @@ In general it's better to use environment variables if you need to do this, as t
 %-------------------------------------------------------------------------------
 \begin{frame}[fragile]
 \frametitle{Thread API calls}
-Most parallel programs are written in a SPMD style: \newline
+Lots of HPC parallel programs are written in a SPMD style: \newline
 {\bf S}ingle {\bf P}rogram, {\bf M}ultiple {\bf D}ata.
 \begin{itemize}
-  \item Remember MPI has a SPMD model.
+  \item MPI has a SPMD model, which you'll learn about later in the course.
   \item Threads run the same code, and use their ID to work out which data to operate on.
-  \item The SPMD approach requires lots of bookkeeping.
+  %\item The SPMD approach requires of bookkeeping.
 \end{itemize}
 
 The OpenMP API gives you calls to determine thread information when \emph{inside} a parallel region:
@@ -266,8 +268,7 @@ int main(void) {
   double *A, *B, *C; // Arrays
 
   // Allocate and initialise vectors
-  A = malloc(sizeof(double)*N);
-  B = malloc(sizeof(double)*N);
+  A = malloc(sizeof(double)*N); B = malloc(sizeof(double)*N);
   C = malloc(sizeof(double)*N);
   for (int i = 0; i < N; ++i) {
     A[i] = 1.0; B[i] = 2.0; C[i] = 0.0;
@@ -441,17 +442,17 @@ Much simpler than using the API calls to share/distribute the work manually.
 \frametitle{Taking stock}
 \begin{itemize}
   \item We've seen how to parallelise a simple program using OpenMP.
-  \item Shown the MPI-style SPMD approach for dividing work.
+  \item Shown the SPMD approach for dividing work.
   \item OpenMP worksharing constructs make this easier.
 \end{itemize}
 
-The rest of this session:
-\begin{itemize}
-  \item Expands on the worksharing constructs.
-  \item The first example for you to try.
-\end{itemize}
 
-Next time: the rest of the OpenMP common core.
+%\begin{itemize}
+  %\item Expands on the worksharing constructs.
+  %\item The first example for you to try.
+%\end{itemize}
+
+Next: the rest of the OpenMP common core.
 \end{frame}
 
 %-------------------------------------------------------------------------------
